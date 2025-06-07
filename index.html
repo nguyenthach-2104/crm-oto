@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Ô Tô - Test Kết Nối</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>CRM Ô Tô - Test Đọc/Ghi Google Sheet</h1>
+
+    <h2>Thêm khách hàng mới</h2>
+    <form id="addCustomerForm">
+        <input type="text" id="tenKhachHang" placeholder="Tên khách hàng" required>
+        <input type="tel" id="soDienThoai" placeholder="Số điện thoại" required>
+        <button type="submit">Thêm mới</button>
+    </form>
+    <div id="message"></div>
+
+    <hr>
+
+    <h2>Danh sách khách hàng</h2>
+    <button id="loadDataBtn">Tải lại danh sách</button>
+    <table id="customerTable">
+        <thead>
+            <tr>
+                <th>Tên Khách Hàng</th>
+                <th>Số Điện Thoại</th>
+                <th>Ngày Tạo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="3">Đang tải dữ liệu...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script src="script.js"></script>
+</body>
+</html>

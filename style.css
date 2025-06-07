@@ -1,0 +1,10 @@
+body { font-family: sans-serif; max-width: 800px; margin: 20px auto; }
+form { display: flex; gap: 10px; margin-bottom: 20px; }
+input { padding: 8px; flex-grow: 1; }
+button { padding: 8px 15px; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+thead { background-color: #f2f2f2; }
+#message { margin-bottom: 15px; padding: 10px; border-radius: 5px; }
+.success { background-color: #d4edda; color: #155724; }
+.error { background-color: #f8d7da; color: #721c24; }
