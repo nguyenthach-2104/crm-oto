@@ -32,10 +32,9 @@ async function addCustomer(event) {
     urlWithParams.searchParams.append('SoDienThoai', soDienThoai);
     urlWithParams.searchParams.append('NgayTao', new Date().toLocaleString('vi-VN'));
     urlWithParams.searchParams.append('ID', 'KH' + Date.now());
-    // Sẽ cập nhật sau khi có thông tin người dùng đăng nhập
+    
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
     urlWithParams.searchParams.append('NhanVienTao', loggedInUser ? loggedInUser.HoTen : "Không xác định");
-
 
     // Tạo URL cuối cùng để gọi qua proxy
     const finalUrlToFetch = PROXY_URL + encodeURIComponent(urlWithParams.href);
@@ -57,13 +56,16 @@ async function addCustomer(event) {
     }
 }
 
+
 /**
  * Hàm ĐỌC dữ liệu từ Google Sheet qua phương thức GET
  */
 async function fetchCustomers() {
     customerTableBody.innerHTML = '<tr><td colspan="3">Đang tải dữ liệu...</td></tr>';
     try {
-        const response = await fetch(WEB_APP_URL); // Gửi yêu cầu GET đơn giản
+        // Tạo URL cuối cùng để gọi qua proxy
+        const finalUrlToFetch = PROXY_URL + encodeURIComponent(GOOGLE_SCRIPT_URL);
+        const response = await fetch(finalUrlToFetch); // Gửi yêu cầu GET đơn giản
         const data = await response.json();
         
         customerTableBody.innerHTML = ''; 
@@ -86,6 +88,7 @@ async function fetchCustomers() {
         customerTableBody.innerHTML = `<tr><td colspan="3">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
     }
 }
+
 
 /**
  * Hàm hiển thị thông báo
