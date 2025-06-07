@@ -1,5 +1,5 @@
 // Dán URL của Google Apps Script Web App của bạn vào đây
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxXWGX5z_jDAObth0H3Ao0ZWK0WBdMg-1PY6Z1E4pw8ZogxIvZ4EQc6J0v686YEzewt/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyt_UvCyx7uoo6RaFkrY-xXO0Mqq0thQ_hMYaQ9HhcwV6aiCNn99NtDs62ikdq_v2WJ/exec';
 
 const loginForm = document.getElementById('loginForm');
 const loginMessage = document.getElementById('loginMessage');
