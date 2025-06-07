@@ -1,5 +1,5 @@
 // Dán URL của Google Apps Script Web App vào đây
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzqMUBfjq1BDl7pICLV_cMESkuF3ZjUC0rhEXHma6z3df4hb4Y6wwwJIJ7Yejw6FxLo/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxicuA511S69p4TK4oUfVLADI2ytb9EJHq3C7MdKElb3D0M4FxlcBRDZUT7S0kjL6g/exec';
 
 const form = document.getElementById('addCustomerForm');
 const messageDiv = document.getElementById('message');
