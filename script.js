@@ -16,7 +16,7 @@ const customerTableBody = document.querySelector('#customerTable tbody');
 const loadDataBtn = document.getElementById('loadDataBtn');
 
 /**
- * Hàm GHI dữ liệu khách hàng mới lên Google Sheet qua phương thức POST
+ * Hàm GHI dữ liệu khách hàng mới bằng phương thức GET
  */
 async function addCustomer(event) {
     event.preventDefault(); 
@@ -24,37 +24,30 @@ async function addCustomer(event) {
     const tenKhachHang = document.getElementById('tenKhachHang').value;
     const soDienThoai = document.getElementById('soDienThoai').value;
     
-    // Dữ liệu khách hàng
-    const customerData = {
-        TenKhachHang: tenKhachHang,
-        SoDienThoai: soDienThoai,
-        NgayTao: new Date().toLocaleString('vi-VN'),
-        ID: 'KH' + Date.now(),
-        NhanVienTao: "Test User" 
-    };
+    // Tạo URL gốc với các tham số
+    const urlWithParams = new URL(GOOGLE_SCRIPT_URL);
+    urlWithParams.searchParams.append('action', 'addCustomer');
+    // Quan trọng: Tên tham số phải khớp với tên cột trong Google Sheet
+    urlWithParams.searchParams.append('TenKhachHang', tenKhachHang);
+    urlWithParams.searchParams.append('SoDienThoai', soDienThoai);
+    urlWithParams.searchParams.append('NgayTao', new Date().toLocaleString('vi-VN'));
+    urlWithParams.searchParams.append('ID', 'KH' + Date.now());
+    // Sẽ cập nhật sau khi có thông tin người dùng đăng nhập
+    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    urlWithParams.searchParams.append('NhanVienTao', loggedInUser ? loggedInUser.HoTen : "Không xác định");
 
-    // Toàn bộ request body, bao gồm action và data
-    const requestBody = {
-      action: 'addCustomer',
-      data: customerData
-    };
+
+    // Tạo URL cuối cùng để gọi qua proxy
+    const finalUrlToFetch = PROXY_URL + encodeURIComponent(urlWithParams.href);
 
     try {
-        // Gửi yêu cầu POST đến proxy
-        const response = await fetch(WEB_APP_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody)
-        });
-        
+        const response = await fetch(finalUrlToFetch); // Gửi yêu cầu GET
         const result = await response.json();
 
         if(result.status === 'success') {
             showMessage('Đã thêm khách hàng thành công! Đang tải lại danh sách...', 'success');
             form.reset();
-            setTimeout(fetchCustomers, 500); // Chờ 0.5s để sheet kịp cập nhật
+            setTimeout(fetchCustomers, 500);
         } else {
             showMessage('Lỗi từ server: ' + result.message, 'error');
         }
