@@ -1,5 +1,5 @@
 // URL CUỐI CÙNG, KHÔNG DÙNG PROXY
-const WEB_APP_URL = 'URL_MOI_NHAT_CUA_BAN'; // <-- Dán URL mới nhất của bạn vào đây
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; // <-- Dán URL mới nhất của bạn vào đây
 
 const loginForm = document.getElementById('loginForm');
 const loginMessage = document.getElementById('loginMessage');
