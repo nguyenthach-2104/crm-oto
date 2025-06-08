@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Ô Tô - Quản lý Khách hàng</title>
     <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
     <header class="main-header">
@@ -18,21 +21,23 @@
             <form id="addCustomerForm" class="grid-form">
                 <input type="text" id="tenKhachHang" placeholder="Tên khách hàng (*)" required>
                 <input type="tel" id="sdt" placeholder="Số điện thoại (*)" required>
-                <input type="text" id="tinhThanh" placeholder="Tỉnh/Thành phố">
-                <input type="text" id="huyenTp" placeholder="Huyện/TP">
-                <input type="text" id="loaiXe" placeholder="Loại xe">
-                <input type="text" id="phienBan" placeholder="Phiên bản">
-                <input type="text" id="mau" placeholder="Màu sắc">
-                <input type="text" id="kenh" placeholder="Kênh">
-                <input type="text" id="nguon" placeholder="Nguồn">
-                <input type="text" id="trangThai" placeholder="Trạng thái">
-                <input type="text" id="phanLoaiKH" placeholder="Phân loại KH">
-                <input type="text" id="laiThu" placeholder="Lái thử">
-                <input type="text" id="ngayKyHD" placeholder="Ngày ký HĐ (dd/mm/yyyy)">
-                <input type="text" id="ngayXHD" placeholder="Ngày XHĐ (dd/mm/yyyy)">
                 
-                <textarea id="ghiChu" placeholder="Ghi chú" class="full-width"></textarea>
+                <select id="tinhThanh"><option value="">-- Chọn Tỉnh/Thành --</option></select>
+                <select id="loaiXe"><option value="">-- Chọn Loại xe --</option></select>
+                <select id="phienBan"><option value="">-- Chọn Phiên bản --</option></select>
+                <select id="mau"><option value="">-- Chọn Màu --</option></select>
+                <select id="kenh"><option value="">-- Chọn Kênh --</option></select>
+                <select id="nguon"><option value="">-- Chọn Nguồn --</option></select>
+                <select id="trangThai"><option value="">-- Chọn Trạng thái --</option></select>
+                <select id="phanLoaiKH"><option value="">-- Chọn Phân loại KH --</option></select>
+                
+                <input type="text" id="huyenTp" placeholder="Huyện/TP">
+                <select id="laiThu"><option value="">-- Lái thử? --</option><option>Có</option><option>Không</option></select>
 
+                <input type="text" id="ngayKyHD" placeholder="Ngày ký HĐ">
+                <input type="text" id="ngayXHD" placeholder="Ngày XHĐ">
+
+                <textarea id="ghiChu" placeholder="Ghi chú" class="full-width"></textarea>
                 <button type="submit" class="full-width">Thêm mới</button>
             </form>
             <div id="message"></div>
@@ -41,29 +46,7 @@
         <hr>
 
         <section class="table-section">
-            <h2>Danh sách khách hàng</h2>
-            <button id="loadDataBtn">Tải lại danh sách</button>
-            <div class="table-wrapper">
-                <table id="customerTable">
-                    <thead>
-                        <tr>
-                            <th>Tên KH</th>
-                            <th>SDT</th>
-                            <th>Tỉnh</th>
-                            <th>Loại Xe</th>
-                            <th>Trạng Thái</th>
-                            <th>Phân Loại KH</th>
-                            <th>Ngày Ký HĐ</th>
-                            <th>Nhân Viên</th>
-                            <th>Ngày Tạo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="9">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+             </section>
     </main>
     
     <script src="script.js"></script>
