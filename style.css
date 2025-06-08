@@ -8,3 +8,35 @@ thead { background-color: #f2f2f2; }
 #message { margin-bottom: 15px; padding: 10px; border-radius: 5px; }
 .success { background-color: #d4edda; color: #155724; }
 .error { background-color: #f8d7da; color: #721c24; }
+/* --- CSS cho Form nhập liệu --- */
+
+/* Tạo một layout dạng lưới cho form */
+.grid-form {
+  display: grid;
+  /* Tự động tạo các cột, mỗi cột rộng tối thiểu 200px */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px; /* Khoảng cách giữa các ô */
+}
+
+/* Class này sẽ giúp một phần tử chiếm toàn bộ chiều rộng của lưới */
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Định dạng chung cho các ô input và textarea */
+.grid-form input,
+.grid-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Đảm bảo padding không làm thay đổi kích thước */
+    font-family: sans-serif; /* Giữ font chữ đồng bộ */
+    font-size: 14px;
+}
+
+/* Định dạng riêng cho ô Ghi chú (textarea) */
+.grid-form textarea {
+    min-height: 80px; /* Chiều cao tối thiểu, người dùng có thể kéo to hơn */
+    resize: vertical; /* Chỉ cho phép người dùng thay đổi chiều cao */
+}
