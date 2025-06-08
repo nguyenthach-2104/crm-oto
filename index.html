@@ -14,23 +14,24 @@
     
     <main>
         <section class="form-section">
-            <h2>Thêm khách hàng mới</h2>
+            <h2>Thêm nhanh khách hàng</h2>
             <form id="addCustomerForm" class="grid-form">
                 <input type="text" id="tenKhachHang" placeholder="Tên khách hàng (*)" required>
                 <input type="tel" id="sdt" placeholder="Số điện thoại (*)" required>
                 <input type="text" id="tinhThanh" placeholder="Tỉnh/Thành phố">
-                <input type="text" id="huyenTp" placeholder="Huyện/TP">
                 <input type="text" id="loaiXe" placeholder="Loại xe">
-                <input type="text" id="phienBan" placeholder="Phiên bản">
-                <input type="text" id="mau" placeholder="Màu sắc">
-                <input type="text" id="kenh" placeholder="Kênh">
-                <input type="text" id="nguon" placeholder="Nguồn">
-                <input type="text" id="trangThai" placeholder="Trạng thái">
-                <input type="text" id="phanLoaiKH" placeholder="Phân loại KH">
-                <input type="text" id="laiThu" placeholder="Lái thử">
-                <input type="text" id="ngayKyHD" placeholder="Ngày ký HĐ (dd/mm/yyyy)">
-                <input type="text" id="ngayXHD" placeholder="Ngày XHĐ (dd/mm/yyyy)">
                 <textarea id="ghiChu" placeholder="Ghi chú" class="full-width"></textarea>
+
+                <input type="hidden" id="huyenTp">
+                <input type="hidden" id="phienBan">
+                <input type="hidden" id="mau">
+                <input type="hidden" id="kenh">
+                <input type="hidden" id="nguon">
+                <input type="hidden" id="trangThai">
+                <input type="hidden" id="phanLoaiKH">
+                <input type="hidden" id="laiThu">
+                <input type="hidden" id="ngayKyHD">
+                <input type="hidden" id="ngayXHD">
 
                 <button type="submit" class="full-width">Thêm mới</button>
             </form>

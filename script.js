@@ -1,9 +1,9 @@
 // ===============================================================
-// FILE: script.js (Hỗ trợ cấu trúc 18 cột)
+// FILE: script.js (Kết nối trực tiếp, không proxy)
 // ===============================================================
 
-// !!! QUAN TRỌNG: Dán URL MỚI NHẤT của bạn từ Apps Script vào đây !!!
-const WEB_APP_URL = 'URL_MOI_NHAT_CUA_BAN'; 
+// URL MỚI NHẤT CỦA BẠN
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec';
 
 const form = document.getElementById('addCustomerForm');
 const messageDiv = document.getElementById('message');
@@ -12,7 +12,7 @@ const loadDataBtn = document.getElementById('loadDataBtn');
 const userInfoDiv = document.getElementById('userInfo');
 
 /**
- * Hàm GHI dữ liệu khách hàng mới với đầy đủ 18 trường
+ * Hàm GHI dữ liệu khách hàng mới với các trường trên form
  */
 async function addCustomer(event) {
     event.preventDefault();
@@ -26,11 +26,11 @@ async function addCustomer(event) {
     url.searchParams.append('dauThoiGian', new Date().toLocaleString('vi-VN'));
     url.searchParams.append('tenNhanVien', loggedInUser ? loggedInUser.HoTen : "Không xác định");
 
-    // Lấy dữ liệu từ tất cả các ô input và gửi đi
+    // Lấy dữ liệu từ tất cả các ô input (cả hiển thị và ẩn)
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
-        if(element) {
+        if (element) {
             url.searchParams.append(fieldId, element.value);
         }
     });
@@ -52,10 +52,11 @@ async function addCustomer(event) {
 }
 
 /**
- * Hàm ĐỌC dữ liệu và hiển thị các cột mới
+ * Hàm ĐỌC dữ liệu từ Google Sheet CÓ PHÂN QUYỀN
  */
 async function fetchCustomers() {
     customerTableBody.innerHTML = '<tr><td colspan="9">Đang tải dữ liệu...</td></tr>';
+    
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
     if (!loggedInUser) {
@@ -103,6 +104,7 @@ async function fetchCustomers() {
         });
     } catch (error) {
         customerTableBody.innerHTML = `<tr><td colspan="9">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
+        console.error("Lỗi fetchCustomers: ", error);
     }
 }
 

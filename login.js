@@ -2,7 +2,7 @@
 // FILE: login.js (Kết nối trực tiếp, không proxy)
 // ===============================================================
 
-// URL CUỐI CÙNG, KHÔNG DÙNG PROXY
+// URL MỚI NHẤT CỦA BẠN
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec';
 
 const loginForm = document.getElementById('loginForm');
@@ -15,15 +15,14 @@ async function handleLogin(event) {
     loginMessage.textContent = 'Đang kiểm tra...';
     loginMessage.className = '';
 
-    const urlWithParams = new URL(WEB_APP_URL);
-    urlWithParams.searchParams.append('action', 'login');
-    urlWithParams.searchParams.append('username', username);
-    urlWithParams.searchParams.append('password', password);
+    const url = new URL(WEB_APP_URL);
+    url.searchParams.append('action', 'login');
+    url.searchParams.append('username', username);
+    url.searchParams.append('password', password);
 
     try {
-        const response = await fetch(urlWithParams);
+        const response = await fetch(url);
         const result = await response.json();
-        
         if (result.status === 'success') {
             sessionStorage.setItem('loggedInUser', JSON.stringify(result.user));
             window.location.href = 'index.html';
