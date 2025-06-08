@@ -4,7 +4,7 @@
 
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
-let allCustomersData = []; // Biến toàn cục để lưu trữ dữ liệu khách hàng
+let allCustomersData = [];
 
 // ===============================================================
 // CÁC HÀM CHÍNH
@@ -60,8 +60,6 @@ async function fetchCustomers() {
             `;
             customerTableBody.appendChild(row);
         });
-        
-        // **PHẦN CODE CŨ GÂY LỖI ĐÃ ĐƯỢC XÓA BỎ KHỎI ĐÂY**
 
     } catch (error) {
         customerTableBody.innerHTML = `<tr><td colspan="6">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
@@ -76,6 +74,7 @@ function populateFormForEdit(customerId) {
         return;
     }
 
+    // Quan trọng: Phải điền cả ID vào ô input ẩn
     document.getElementById('id').value = customer.id;
 
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
@@ -120,12 +119,19 @@ async function handleAddNewCustomer() {
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'addCustomer');
     
-    url.searchParams.append('id', 'KH' + Date.now());
+    // *** PHẦN SỬA LỖI QUAN TRỌNG ***
+    // Tạo ID mới và thêm vào cả URL và ô input ẩn (để nhất quán)
+    const newId = 'KH' + Date.now();
+    document.getElementById('id').value = newId; // Gán ID mới vào form
+    url.searchParams.append('id', newId);      // Gửi ID mới lên server
+
+    // Chuẩn hóa định dạng ngày tháng
     const now = new Date();
     const formattedTimestamp = now.toLocaleString("en-CA", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }).replace(/, /g, " ").slice(0, 19);
     url.searchParams.append('dauThoiGian', formattedTimestamp);
     url.searchParams.append('tenNhanVien', loggedInUser ? loggedInUser.HoTen : "Không xác định");
 
+    // Lấy dữ liệu từ tất cả các ô input và select
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
@@ -149,19 +155,39 @@ async function handleAddNewCustomer() {
 
 
 async function handleUpdateCustomer(customerId) {
-    alert(`Chức năng Cập nhật cho khách hàng ID: ${customerId} sẽ được xây dựng ở bước tiếp theo!`);
-    resetFormToAddMode();
+    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    const url = new URL(WEB_APP_URL);
+    url.searchParams.append('action', 'updateCustomer');
+    
+    // Gửi thông tin người cập nhật để kiểm tra quyền ở back-end
+    url.searchParams.append('updaterName', loggedInUser.HoTen);
+    url.searchParams.append('updaterRole', loggedInUser.VaiTro);
+    url.searchParams.append('updaterTeam', loggedInUser.Nhom);
+
+    // Lấy dữ liệu từ form, bao gồm cả ID đang được sửa
+    const fields = ['id', 'tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
+    fields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (element) url.searchParams.append(fieldId, element.value);
+    });
+    
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+        if (result.status === 'success') {
+            showMessage('Đã cập nhật khách hàng thành công!', 'success');
+            resetFormToAddMode();
+            fetchCustomers();
+        } else {
+            showMessage('Lỗi từ server: ' + result.message, 'error');
+        }
+    } catch (error) {
+        showMessage(`Lỗi khi cập nhật khách hàng: ${error.message}`, 'error');
+    }
 }
 
 
-async function populateDropdowns() {
-    // ... code hàm này giữ nguyên ...
-}
-
-
-function showMessage(msg, type) {
-    // ... code hàm này giữ nguyên ...
-}
+// ... (Các hàm populateDropdowns, showMessage giữ nguyên như cũ) ...
 
 
 // ===============================================================
@@ -169,6 +195,7 @@ function showMessage(msg, type) {
 // ===============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ... (Khối này giữ nguyên như cũ) ...
     const form = document.getElementById('addCustomerForm');
     const loadDataBtn = document.getElementById('loadDataBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -178,11 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if(loadDataBtn) loadDataBtn.addEventListener('click', fetchCustomers);
     if(cancelEditBtn) cancelEditBtn.addEventListener('click', resetFormToAddMode);
 
-    // *** THÊM MỚI: DÙNG EVENT DELEGATION ***
-    // Gán một sự kiện duy nhất cho toàn bộ bảng
     if (customerTableBody) {
         customerTableBody.addEventListener('click', (event) => {
-            // Kiểm tra xem phần tử được click có phải là nút "Sửa" không
             if (event.target.classList.contains('edit-btn')) {
                 const customerId = event.target.getAttribute('data-id');
                 populateFormForEdit(customerId);
