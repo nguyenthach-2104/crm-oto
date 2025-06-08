@@ -1,20 +1,12 @@
 // ===============================================================
-// FILE: script.js (Phiên bản đầy đủ cho Giao diện Thông minh)
+// FILE: script.js (Đã sửa lỗi khởi tạo)
 // ===============================================================
 
 // !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec';
-
-// --- Lấy các phần tử DOM ---
-const form = document.getElementById('addCustomerForm');
-const messageDiv = document.getElementById('message');
-const customerTableBody = document.querySelector('#customerTable tbody');
-const loadDataBtn = document.getElementById('loadDataBtn');
-const userInfoDiv = document.getElementById('userInfo');
-
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
 // ===============================================================
-// CÁC HÀM CHÍNH
+// KHAI BÁO CÁC HÀM CHÍNH
 // ===============================================================
 
 /**
@@ -40,7 +32,7 @@ async function addCustomer(event) {
             url.searchParams.append(fieldId, element.value);
         }
     });
-
+    
     try {
         const response = await fetch(url);
         const result = await response.json();
@@ -48,13 +40,12 @@ async function addCustomer(event) {
         if (result.status === 'success') {
             showMessage('Đã thêm khách hàng thành công!', 'success');
             document.getElementById('addCustomerForm').reset();
-            fetchCustomers(); // Tải lại danh sách sau khi thêm thành công
+            fetchCustomers();
         } else {
             showMessage('Lỗi từ server: ' + result.message, 'error');
         }
     } catch (error) {
         showMessage(`Lỗi khi thêm khách hàng: ${error.message}`, 'error');
-        console.error("Lỗi addCustomer:", error);
     }
 }
 
@@ -62,6 +53,7 @@ async function addCustomer(event) {
  * Hàm ĐỌC dữ liệu từ Google Sheet CÓ PHÂN QUYỀN và hiển thị ra bảng
  */
 async function fetchCustomers() {
+    const customerTableBody = document.querySelector('#customerTable tbody');
     customerTableBody.innerHTML = '<tr><td colspan="9">Đang tải dữ liệu...</td></tr>';
     
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
@@ -71,7 +63,7 @@ async function fetchCustomers() {
         return;
     }
 
-    // Hiển thị thông tin người dùng và nút đăng xuất
+    const userInfoDiv = document.getElementById('userInfo');
     userInfoDiv.innerHTML = `Xin chào, <strong>${loggedInUser.HoTen}</strong> (${loggedInUser.VaiTro}) | <a href="#" id="logoutBtn">Đăng xuất</a>`;
     document.getElementById('logoutBtn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -117,7 +109,7 @@ async function fetchCustomers() {
 }
 
 /**
- * HÀM MỚI: Lấy dữ liệu cho các dropdown từ sheet 'Data' và điền vào các thẻ <select>
+ * Hàm lấy dữ liệu cho các dropdown từ sheet 'Data' và điền vào các thẻ <select>
  */
 async function populateDropdowns() {
     const url = new URL(WEB_APP_URL);
@@ -132,14 +124,11 @@ async function populateDropdowns() {
             return;
         }
 
-        // Lặp qua từng loại dropdown (tinhThanh, loaiXe,...)
-        // Tên key trong optionsData phải khớp với id của thẻ select
         for (const key in optionsData) {
             const selectElement = document.getElementById(key);
             if (selectElement) {
                 const options = optionsData[key];
-                // Xóa các option cũ (trừ option đầu tiên) trước khi thêm mới
-                selectElement.innerHTML = `<option value="">-- Chọn ${selectElement.firstElementChild.textContent.replace('--','').trim()} --</option>`;
+                selectElement.innerHTML = `<option value="">-- ${selectElement.firstElementChild.textContent.replace('--','').trim()} --</option>`;
                 options.forEach(optionValue => {
                     const optionElement = document.createElement('option');
                     optionElement.value = optionValue;
@@ -158,21 +147,28 @@ async function populateDropdowns() {
  * Hàm hiển thị thông báo
  */
 function showMessage(msg, type) {
+    const messageDiv = document.getElementById('message');
     messageDiv.textContent = msg;
     messageDiv.className = type; 
 }
 
 
 // ===============================================================
-// GÁN SỰ KIỆN VÀ KHỞI TẠO
+// KHỐI LỆNH CHẠY KHI TẢI TRANG (DOMContentLoaded)
 // ===============================================================
 
-// Gán sự kiện cho form và nút
-form.addEventListener('submit', addCustomer);
-loadDataBtn.addEventListener('click', fetchCustomers);
-
-// Khi toàn bộ trang HTML đã tải xong, thực hiện các hành động sau:
 document.addEventListener('DOMContentLoaded', () => {
+    // Chỉ khi trang đã tải xong, chúng ta mới tìm các phần tử và gán sự kiện
+    const form = document.getElementById('addCustomerForm');
+    const loadDataBtn = document.getElementById('loadDataBtn');
+    
+    if(form) {
+        form.addEventListener('submit', addCustomer);
+    }
+    if(loadDataBtn) {
+        loadDataBtn.addEventListener('click', fetchCustomers);
+    }
+
     // 1. Lấy danh sách khách hàng và hiển thị
     fetchCustomers();
     
@@ -181,9 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 3. Khởi tạo lịch cho các ô ngày tháng
     flatpickr("#ngayKyHD", { 
-        dateFormat: "d-m-Y", // Định dạng ngày Việt Nam
+        dateFormat: "d/m/Y",
     });
     flatpickr("#ngayXHD", {
-        dateFormat: "d-m-Y",
+        dateFormat: "d/m/Y",
     });
 });
