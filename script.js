@@ -1,5 +1,5 @@
 // ===============================================================
-// FILE: script.js (Đã sửa lỗi khởi tạo)
+// FILE: script.js (Phiên bản cuối cùng đã sửa lỗi khởi tạo)
 // ===============================================================
 
 // !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
@@ -53,6 +53,7 @@ async function addCustomer(event) {
  * Hàm ĐỌC dữ liệu từ Google Sheet CÓ PHÂN QUYỀN và hiển thị ra bảng
  */
 async function fetchCustomers() {
+    // Di chuyển việc lấy các phần tử của bảng vào trong hàm để đảm bảo chúng tồn tại
     const customerTableBody = document.querySelector('#customerTable tbody');
     customerTableBody.innerHTML = '<tr><td colspan="9">Đang tải dữ liệu...</td></tr>';
     
@@ -63,6 +64,7 @@ async function fetchCustomers() {
         return;
     }
 
+    // *** SỬA LỖI: Di chuyển việc lấy userInfoDiv vào đây ***
     const userInfoDiv = document.getElementById('userInfo');
     userInfoDiv.innerHTML = `Xin chào, <strong>${loggedInUser.HoTen}</strong> (${loggedInUser.VaiTro}) | <a href="#" id="logoutBtn">Đăng xuất</a>`;
     document.getElementById('logoutBtn').addEventListener('click', (e) => {
@@ -141,7 +143,6 @@ async function populateDropdowns() {
         console.error("Lỗi khi tải dữ liệu cho dropdown:", error);
     }
 }
-
 
 /**
  * Hàm hiển thị thông báo
