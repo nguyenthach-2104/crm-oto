@@ -15,10 +15,24 @@
     <main>
         <section class="form-section">
             <h2>Thêm khách hàng mới</h2>
-            <form id="addCustomerForm">
-                <input type="text" id="tenKhachHang" placeholder="Tên khách hàng" required>
-                <input type="tel" id="soDienThoai" placeholder="Số điện thoại" required>
-                <button type="submit">Thêm mới</button>
+            <form id="addCustomerForm" class="grid-form">
+                <input type="text" id="tenKhachHang" placeholder="Tên khách hàng (*)" required>
+                <input type="tel" id="sdt" placeholder="Số điện thoại (*)" required>
+                <input type="text" id="tinhThanh" placeholder="Tỉnh/Thành phố">
+                <input type="text" id="huyenTp" placeholder="Huyện/TP">
+                <input type="text" id="loaiXe" placeholder="Loại xe">
+                <input type="text" id="phienBan" placeholder="Phiên bản">
+                <input type="text" id="mau" placeholder="Màu sắc">
+                <input type="text" id="kenh" placeholder="Kênh">
+                <input type="text" id="nguon" placeholder="Nguồn">
+                <input type="text" id="trangThai" placeholder="Trạng thái">
+                <input type="text" id="phanLoaiKH" placeholder="Phân loại KH">
+                <input type="text" id="laiThu" placeholder="Lái thử">
+                <input type="text" id="ngayKyHD" placeholder="Ngày ký HĐ (dd/mm/yyyy)">
+                <input type="text" id="ngayXHD" placeholder="Ngày XHĐ (dd/mm/yyyy)">
+                <textarea id="ghiChu" placeholder="Ghi chú" class="full-width"></textarea>
+
+                <button type="submit" class="full-width">Thêm mới</button>
             </form>
             <div id="message"></div>
         </section>
@@ -28,21 +42,26 @@
         <section class="table-section">
             <h2>Danh sách khách hàng</h2>
             <button id="loadDataBtn">Tải lại danh sách</button>
-            <table id="customerTable">
-                <thead>
-                    <tr>
-                        <th>Tên Khách Hàng</th>
-                        <th>Số Điện Thoại</th>
-                        <th>Nhân Viên Tạo</th>
-                        <th>Ngày Tạo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="4">Đang tải dữ liệu...</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-wrapper">
+                <table id="customerTable">
+                    <thead>
+                        <tr>
+                            <th>Tên KH</th>
+                            <th>SDT</th>
+                            <th>Tỉnh</th>
+                            <th>Loại Xe</th>
+                            <th>Trạng Thái</th>
+                            <th>Phân Loại KH</th>
+                            <th>Ngày Ký HĐ</th>
+                            <th>Nhân Viên</th>
+                            <th>Ngày Tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="9">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
     

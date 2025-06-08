@@ -1,9 +1,9 @@
 // ===============================================================
-// FILE: script.js (Kết nối trực tiếp, không proxy)
+// FILE: script.js (Hỗ trợ cấu trúc 18 cột)
 // ===============================================================
 
-// URL CUỐI CÙNG, KHÔNG DÙNG PROXY
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec';
+// !!! QUAN TRỌNG: Dán URL MỚI NHẤT của bạn từ Apps Script vào đây !!!
+const WEB_APP_URL = 'URL_MOI_NHAT_CUA_BAN'; 
 
 const form = document.getElementById('addCustomerForm');
 const messageDiv = document.getElementById('message');
@@ -12,31 +12,36 @@ const loadDataBtn = document.getElementById('loadDataBtn');
 const userInfoDiv = document.getElementById('userInfo');
 
 /**
- * Hàm GHI dữ liệu khách hàng mới bằng phương thức GET
+ * Hàm GHI dữ liệu khách hàng mới với đầy đủ 18 trường
  */
 async function addCustomer(event) {
-    event.preventDefault(); 
-    
-    const tenKhachHang = document.getElementById('tenKhachHang').value;
-    const soDienThoai = document.getElementById('soDienThoai').value;
+    event.preventDefault();
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'addCustomer');
-    url.searchParams.append('TenKhachHang', tenKhachHang);
-    url.searchParams.append('SoDienThoai', soDienThoai);
-    url.searchParams.append('NgayTao', new Date().toLocaleString('vi-VN'));
-    url.searchParams.append('ID', 'KH' + Date.now());
-    // *** DÒNG ĐÃ SỬA LẠI TỪ search_params THÀNH searchParams ***
-    url.searchParams.append('NhanVienTao', loggedInUser ? loggedInUser.HoTen : "Không xác định");
 
+    // Tự động thêm các trường ẩn
+    url.searchParams.append('id', 'KH' + Date.now());
+    url.searchParams.append('dauThoiGian', new Date().toLocaleString('vi-VN'));
+    url.searchParams.append('tenNhanVien', loggedInUser ? loggedInUser.HoTen : "Không xác định");
+
+    // Lấy dữ liệu từ tất cả các ô input và gửi đi
+    const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
+    fields.forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if(element) {
+            url.searchParams.append(fieldId, element.value);
+        }
+    });
+    
     try {
         const response = await fetch(url);
         const result = await response.json();
 
         if (result.status === 'success') {
             showMessage('Đã thêm khách hàng thành công!', 'success');
-            form.reset();
+            document.getElementById('addCustomerForm').reset();
             fetchCustomers();
         } else {
             showMessage('Lỗi từ server: ' + result.message, 'error');
@@ -46,18 +51,15 @@ async function addCustomer(event) {
     }
 }
 
-
 /**
- * Hàm ĐỌC dữ liệu từ Google Sheet CÓ PHÂN QUYỀN
+ * Hàm ĐỌC dữ liệu và hiển thị các cột mới
  */
 async function fetchCustomers() {
-    customerTableBody.innerHTML = '<tr><td colspan="4">Đang tải dữ liệu...</td></tr>';
-    
+    customerTableBody.innerHTML = '<tr><td colspan="9">Đang tải dữ liệu...</td></tr>';
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
     if (!loggedInUser) {
-        customerTableBody.innerHTML = '<tr><td colspan="4">Lỗi: Không tìm thấy thông tin người dùng. Đang chuyển về trang đăng nhập...</td></tr>';
-        setTimeout(() => { window.location.href = 'login.html'; }, 3000);
+        window.location.href = 'login.html';
         return;
     }
 
@@ -68,34 +70,47 @@ async function fetchCustomers() {
         window.location.href = 'login.html';
     });
 
-    // Tạo URL với các tham số để gửi lên back-end
     const url = new URL(WEB_APP_URL);
-    // Lưu ý: Không cần action=getCustomers vì doGet mặc định là hành động này
-    url.searchParams.append('role', loggedInUser.VaiTro || 'NhanVien'); // Gửi vai trò
-    url.searchParams.append('name', loggedInUser.HoTen || ''); // Gửi tên
-    url.searchParams.append('team', loggedInUser.Nhom || ''); // Gửi tên nhóm
+    url.searchParams.append('role', loggedInUser.VaiTro || 'NhanVien');
+    url.searchParams.append('name', loggedInUser.HoTen || '');
+    url.searchParams.append('team', loggedInUser.Nhom || '');
     
     try {
         const response = await fetch(url);
         const data = await response.json();
         
-        // ... (phần code hiển thị bảng giữ nguyên như cũ) ...
+        customerTableBody.innerHTML = ''; 
         
+        if (data.length === 0) {
+            customerTableBody.innerHTML = '<tr><td colspan="9">Không có dữ liệu khách hàng.</td></tr>';
+            return;
+        }
+
+        data.forEach(customer => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${customer.tenKhachHang || ''}</td>
+                <td>${customer.sdt || ''}</td>
+                <td>${customer.tinhThanh || ''}</td>
+                <td>${customer.loaiXe || ''}</td>
+                <td>${customer.trangThai || ''}</td>
+                <td>${customer.phanLoaiKH || ''}</td>
+                <td>${customer.ngayKyHD || ''}</td>
+                <td>${customer.tenNhanVien || ''}</td>
+                <td>${new Date(customer.dauThoiGian).toLocaleString('vi-VN')}</td>
+            `;
+            customerTableBody.appendChild(row);
+        });
     } catch (error) {
-        // ... (phần code xử lý lỗi giữ nguyên như cũ) ...
+        customerTableBody.innerHTML = `<tr><td colspan="9">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
     }
 }
-
 
 function showMessage(msg, type) {
     messageDiv.textContent = msg;
     messageDiv.className = type; 
 }
 
-
-// Gán sự kiện cho form và nút
 form.addEventListener('submit', addCustomer);
 loadDataBtn.addEventListener('click', fetchCustomers);
-
-// Tự động tải dữ liệu khi mở trang
 document.addEventListener('DOMContentLoaded', fetchCustomers);
