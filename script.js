@@ -1,10 +1,11 @@
 // ===============================================================
-// FILE: script.js (Hoàn thiện chức năng Sửa)
+// FILE: script.js (Phiên bản đầy đủ, hoàn thiện tất cả chức năng)
 // ===============================================================
 
+// !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
-let allCustomersData = [];
+let allCustomersData = []; // Biến toàn cục để lưu trữ dữ liệu khách hàng
 
 // ===============================================================
 // CÁC HÀM CHÍNH
@@ -66,7 +67,6 @@ async function fetchCustomers() {
     }
 }
 
-
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
     if (!customer) {
@@ -74,7 +74,6 @@ function populateFormForEdit(customerId) {
         return;
     }
 
-    // Quan trọng: Phải điền cả ID vào ô input ẩn
     document.getElementById('id').value = customer.id;
 
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
@@ -92,7 +91,6 @@ function populateFormForEdit(customerId) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-
 function resetFormToAddMode() {
     document.getElementById('id').value = ''; 
     document.getElementById('addCustomerForm').reset();
@@ -100,7 +98,6 @@ function resetFormToAddMode() {
     document.getElementById('submitBtn').textContent = 'Thêm mới';
     document.getElementById('cancelEditBtn').style.display = 'none';
 }
-
 
 async function handleSubmit(event) {
     event.preventDefault();
@@ -113,25 +110,17 @@ async function handleSubmit(event) {
     }
 }
 
-
 async function handleAddNewCustomer() {
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'addCustomer');
     
-    // *** PHẦN SỬA LỖI QUAN TRỌNG ***
-    // Tạo ID mới và thêm vào cả URL và ô input ẩn (để nhất quán)
-    const newId = 'KH' + Date.now();
-    document.getElementById('id').value = newId; // Gán ID mới vào form
-    url.searchParams.append('id', newId);      // Gửi ID mới lên server
-
-    // Chuẩn hóa định dạng ngày tháng
+    url.searchParams.append('id', 'KH' + Date.now());
     const now = new Date();
     const formattedTimestamp = now.toLocaleString("en-CA", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }).replace(/, /g, " ").slice(0, 19);
     url.searchParams.append('dauThoiGian', formattedTimestamp);
     url.searchParams.append('tenNhanVien', loggedInUser ? loggedInUser.HoTen : "Không xác định");
 
-    // Lấy dữ liệu từ tất cả các ô input và select
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
@@ -153,18 +142,15 @@ async function handleAddNewCustomer() {
     }
 }
 
-
 async function handleUpdateCustomer(customerId) {
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'updateCustomer');
     
-    // Gửi thông tin người cập nhật để kiểm tra quyền ở back-end
     url.searchParams.append('updaterName', loggedInUser.HoTen);
     url.searchParams.append('updaterRole', loggedInUser.VaiTro);
     url.searchParams.append('updaterTeam', loggedInUser.Nhom);
 
-    // Lấy dữ liệu từ form, bao gồm cả ID đang được sửa
     const fields = ['id', 'tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
@@ -186,16 +172,47 @@ async function handleUpdateCustomer(customerId) {
     }
 }
 
+async function populateDropdowns() {
+    const url = new URL(WEB_APP_URL);
+    url.searchParams.append('action', 'getOptions');
+    try {
+        const response = await fetch(url);
+        const optionsData = await response.json();
+        if (optionsData.status === 'error') {
+            console.error('Lỗi khi lấy dữ liệu options:', optionsData.message);
+            return;
+        }
+        for (const key in optionsData) {
+            const selectElement = document.getElementById(key);
+            if (selectElement) {
+                const options = optionsData[key];
+                selectElement.innerHTML = `<option value="">-- ${selectElement.firstElementChild.textContent.replace('--','').trim()} --</option>`;
+                options.forEach(optionValue => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = optionValue;
+                    optionElement.textContent = optionValue;
+                    selectElement.appendChild(optionElement);
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải dữ liệu cho dropdown:", error);
+    }
+}
 
-// ... (Các hàm populateDropdowns, showMessage giữ nguyên như cũ) ...
-
+function showMessage(msg, type) {
+    const messageDiv = document.getElementById('message');
+    if (messageDiv) {
+        messageDiv.textContent = msg;
+        messageDiv.className = type; 
+    }
+}
 
 // ===============================================================
 // KHỐI LỆNH CHẠY KHI TẢI TRANG
 // ===============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (Khối này giữ nguyên như cũ) ...
     const form = document.getElementById('addCustomerForm');
     const loadDataBtn = document.getElementById('loadDataBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
