@@ -17,27 +17,25 @@
     
     <main>
         <section class="form-section">
-            <h2>Thêm khách hàng mới</h2>
+            <h2>Thêm nhanh khách hàng</h2>
             <form id="addCustomerForm" class="grid-form">
                 <input type="text" id="tenKhachHang" placeholder="Tên khách hàng (*)" required>
                 <input type="tel" id="sdt" placeholder="Số điện thoại (*)" required>
-                
                 <select id="tinhThanh"><option value="">-- Chọn Tỉnh/Thành --</option></select>
                 <select id="loaiXe"><option value="">-- Chọn Loại xe --</option></select>
-                <select id="phienBan"><option value="">-- Chọn Phiên bản --</option></select>
-                <select id="mau"><option value="">-- Chọn Màu --</option></select>
-                <select id="kenh"><option value="">-- Chọn Kênh --</option></select>
-                <select id="nguon"><option value="">-- Chọn Nguồn --</option></select>
-                <select id="trangThai"><option value="">-- Chọn Trạng thái --</option></select>
-                <select id="phanLoaiKH"><option value="">-- Chọn Phân loại KH --</option></select>
-                
-                <input type="text" id="huyenTp" placeholder="Huyện/TP">
-                <select id="laiThu"><option value="">-- Lái thử? --</option><option>Có</option><option>Không</option></select>
-
-                <input type="text" id="ngayKyHD" placeholder="Ngày ký HĐ">
-                <input type="text" id="ngayXHD" placeholder="Ngày XHĐ">
-
                 <textarea id="ghiChu" placeholder="Ghi chú" class="full-width"></textarea>
+
+                <input type="hidden" id="huyenTp">
+                <input type="hidden" id="phienBan">
+                <input type="hidden" id="mau">
+                <input type="hidden" id="kenh">
+                <input type="hidden" id="nguon">
+                <input type="hidden" id="trangThai">
+                <input type="hidden" id="phanLoaiKH">
+                <input type="hidden" id="laiThu">
+                <input type="hidden" id="ngayKyHD">
+                <input type="hidden" id="ngayXHD">
+                
                 <button type="submit" class="full-width">Thêm mới</button>
             </form>
             <div id="message"></div>
@@ -46,7 +44,29 @@
         <hr>
 
         <section class="table-section">
-             </section>
+            <h2>Danh sách khách hàng</h2>
+            <button id="loadDataBtn">Tải lại danh sách</button>
+            <div class="table-wrapper">
+                <table id="customerTable">
+                    <thead>
+                        <tr>
+                            <th>Tên KH</th>
+                            <th>SDT</th>
+                            <th>Tỉnh</th>
+                            <th>Loại Xe</th>
+                            <th>Trạng Thái</th>
+                            <th>Phân Loại KH</th>
+                            <th>Ngày Ký HĐ</th>
+                            <th>Nhân Viên</th>
+                            <th>Ngày Tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="9">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
     
     <script src="script.js"></script>
