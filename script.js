@@ -27,7 +27,8 @@ async function addCustomer(event) {
     url.searchParams.append('SoDienThoai', soDienThoai);
     url.searchParams.append('NgayTao', new Date().toLocaleString('vi-VN'));
     url.searchParams.append('ID', 'KH' + Date.now());
-    url.search_params.append('NhanVienTao', loggedInUser ? loggedInUser.HoTen : "Không xác định");
+    // *** DÒNG ĐÃ SỬA LẠI TỪ search_params THÀNH searchParams ***
+    url.searchParams.append('NhanVienTao', loggedInUser ? loggedInUser.HoTen : "Không xác định");
 
     try {
         const response = await fetch(url);
