@@ -3,7 +3,7 @@
 // ===============================================================
 
 // URL CUỐI CÙNG, KHÔNG DÙNG PROXY
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxicuA511S69p4TK4oUfVLADI2ytb9EJHq3C7MdKElb3D0M4FxlcBRDZUT7S0kjL6g/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec';
 
 const form = document.getElementById('addCustomerForm');
 const messageDiv = document.getElementById('message');
