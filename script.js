@@ -1,18 +1,30 @@
 // ===============================================================
-// FILE: script.js (Phiên bản hoàn thiện cuối cùng)
+// FILE: script.js (Hoàn thiện chức năng Lọc theo ngày)
 // ===============================================================
 
+// !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
-let allCustomersData = [];
+let allCustomersData = []; // Biến toàn cục để lưu trữ dữ liệu khách hàng
 
 // ===============================================================
-// CÁC HÀM CHÍNH
+// CÁC HÀM ĐIỀU KHIỂN POPUP
+// ===============================================================
+function openModal() { document.getElementById('customerModal').style.display = 'flex'; }
+function closeModal() { document.getElementById('customerModal').style.display = 'none'; }
+
+
+// ===============================================================
+// CÁC HÀM XỬ LÝ DỮ LIỆU
 // ===============================================================
 
-async function fetchCustomers() {
+/**
+ * HÀM ĐƯỢC NÂNG CẤP: Có thể nhận thêm tham số lọc theo ngày tháng
+ * @param {object} filter - Đối tượng chứa thông tin lọc, ví dụ: {type: 'dauThoiGian', start: '2025-06-01', end: '2025-06-30'}
+ */
+async function fetchCustomers(filter = {}) {
     const customerTableBody = document.querySelector('#customerTable tbody');
-    customerTableBody.innerHTML = '<tr><td colspan="6">Đang tải dữ liệu...</td></tr>';
+    customerTableBody.innerHTML = '<tr><td colspan="9">Đang tải dữ liệu...</td></tr>';
     
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
     if (!loggedInUser) {
@@ -31,32 +43,32 @@ async function fetchCustomers() {
     }
 
     const url = new URL(WEB_APP_URL);
+    // Luôn gửi thông tin phân quyền
     url.searchParams.append('role', loggedInUser.VaiTro || 'NhanVien');
     url.searchParams.append('name', loggedInUser.HoTen || '');
     url.searchParams.append('team', loggedInUser.Nhom || '');
+
+    // Gửi thông tin lọc nếu có
+    if (filter.type && filter.start && filter.end) {
+        url.searchParams.append('filterType', filter.type);
+        url.searchParams.append('startDate', filter.start);
+        url.searchParams.append('endDate', filter.end);
+    }
     
     try {
         const response = await fetch(url);
         let data = await response.json();
         
-        // *** PHẦN SẮP XẾP ĐƯỢC SỬA LẠI CHO CHÍNH XÁC ***
+        // Sắp xếp dữ liệu ở Front-end
         if (Array.isArray(data)) {
-            data.sort((a, b) => {
-                // So sánh trực tiếp chuỗi ký tự YYYY-MM-DD HH:mm:ss là cách đáng tin cậy
-                const timeA = a.dauThoiGian || '';
-                const timeB = b.dauThoiGian || '';
-                // So sánh ngược để đưa giá trị mới hơn (lớn hơn) lên đầu
-                if (timeB < timeA) return -1;
-                if (timeB > timeA) return 1;
-                return 0;
-            });
+            data.sort((a, b) => new Date(b.dauThoiGian) - new Date(a.dauThoiGian));
         }
         
         allCustomersData = data;
         customerTableBody.innerHTML = ''; 
         
         if (data.length === 0) {
-            customerTableBody.innerHTML = '<tr><td colspan="6">Không có dữ liệu khách hàng.</td></tr>';
+            customerTableBody.innerHTML = '<tr><td colspan="9">Không có dữ liệu khách hàng nào khớp với điều kiện.</td></tr>';
             return;
         }
 
@@ -75,32 +87,32 @@ async function fetchCustomers() {
         });
 
     } catch (error) {
-        customerTableBody.innerHTML = `<tr><td colspan="6">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
-        console.error("Lỗi fetchCustomers: ", error);
+        customerTableBody.innerHTML = `<tr><td colspan="9">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
     }
 }
 
 
-// ... (Tất cả các hàm khác từ populateFormForEdit đến hết file giữ nguyên như cũ) ...
-// Để đảm bảo, tôi sẽ dán lại toàn bộ các hàm còn lại.
-
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
-    if (!customer) { console.error("Không tìm thấy khách hàng với ID:", customerId); return; }
+    if (!customer) return;
+
     document.getElementById('id').value = customer.id;
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) { element.value = customer[fieldId] || ''; }
     });
+    
     const oldNotesDiv = document.getElementById('oldNotesDisplay');
     oldNotesDiv.style.display = 'block';
     oldNotesDiv.innerHTML = `<strong>Lịch sử Ghi chú & Hoạt động:</strong><br><pre>${customer.ghiChu || 'Chưa có ghi chú.'}</pre>`;
     document.getElementById('ghiChu').value = '';
     document.getElementById('ghiChu').placeholder = "Thêm ghi chú mới tại đây...";
+
     document.getElementById('formTitle').textContent = `Cập nhật KH: ${customer.tenKhachHang}`;
     document.getElementById('submitBtn').textContent = 'Lưu thay đổi';
     document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    
     openModal();
 }
 
@@ -167,6 +179,9 @@ async function handleUpdateCustomer(customerId) {
     } catch (error) { showMessage(`Lỗi khi cập nhật khách hàng: ${error.message}`, 'error'); }
 }
 
+async function populateDropdowns() { /* ... Giữ nguyên như cũ ... */ }
+function showMessage(msg, type) { /* ... Giữ nguyên như cũ ... */ }
+// Dán lại các hàm không đổi
 async function populateDropdowns() {
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'getOptions');
@@ -195,10 +210,36 @@ function showMessage(msg, type) {
     if (messageDiv) { messageDiv.textContent = msg; messageDiv.className = type; }
 }
 
-function openModal() { document.getElementById('customerModal').style.display = 'flex'; }
-function closeModal() { document.getElementById('customerModal').style.display = 'none'; }
+
+/**
+ * HÀM MỚI: Thiết lập ngày mặc định cho bộ lọc (tháng hiện tại)
+ */
+function setDefaultDates() {
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    if(!startDateInput || !endDateInput) return;
+
+    const now = new Date();
+    // Lấy ngày đầu tiên của tháng hiện tại
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Lấy ngày cuối cùng của tháng hiện tại
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const flatpickrConfig = {
+        dateFormat: "Y-m-d", // Định dạng chuẩn YYYY-MM-DD
+    };
+
+    flatpickr(startDateInput, { ...flatpickrConfig, defaultDate: firstDay });
+    flatpickr(endDateInput, { ...flatpickrConfig, defaultDate: lastDay });
+}
+
+// ===============================================================
+// KHỐI LỆNH CHẠY KHI TẢI TRANG
+// ===============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Lấy các phần tử DOM
     const form = document.getElementById('addCustomerForm');
     const loadDataBtn = document.getElementById('loadDataBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -206,12 +247,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const customerModal = document.getElementById('customerModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const customerTableBody = document.querySelector('#customerTable tbody');
+
+    // Gán sự kiện cho các nút điều khiển Popup
     if(addCustomerBtn) { addCustomerBtn.addEventListener('click', () => { resetFormToAddMode(); openModal(); }); }
     if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if(customerModal) { customerModal.addEventListener('click', (event) => { if (event.target === customerModal) closeModal(); }); }
+    
+    // Gán sự kiện cho các nút chức năng
     if(form) form.addEventListener('submit', handleSubmit);
-    if(loadDataBtn) loadDataBtn.addEventListener('click', fetchCustomers);
+    if(loadDataBtn) loadDataBtn.addEventListener('click', () => fetchCustomers()); // Tải lại toàn bộ
     if(cancelEditBtn) cancelEditBtn.addEventListener('click', resetFormToAddMode);
+    
+    // Gán sự kiện Sửa cho toàn bộ bảng
     if (customerTableBody) {
         customerTableBody.addEventListener('click', (event) => {
             if (event.target.classList.contains('edit-btn')) {
@@ -220,8 +267,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- GÁN SỰ KIỆN MỚI CHO CÁC NÚT LỌC ---
+    const filterByTimestampBtn = document.getElementById('filterByTimestampBtn');
+    const filterByContractBtn = document.getElementById('filterByContractBtn');
+    const filterByDeliveryBtn = document.getElementById('filterByDeliveryBtn');
+    const resetFilterBtn = document.getElementById('resetFilterBtn');
+
+    const handleFilterClick = (filterType) => {
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+            const filter = {
+                type: filterType,
+                start: startDateInput.value,
+                end: endDateInput.value
+            };
+            fetchCustomers(filter);
+        } else {
+            alert("Vui lòng chọn ngày bắt đầu và ngày kết thúc.");
+        }
+    };
+
+    if (filterByTimestampBtn) filterByTimestampBtn.addEventListener('click', () => handleFilterClick('dauThoiGian'));
+    if (filterByContractBtn) filterByContractBtn.addEventListener('click', () => handleFilterClick('ngayKyHD'));
+    if (filterByDeliveryBtn) filterByDeliveryBtn.addEventListener('click', () => handleFilterClick('ngayXHD'));
+    if (resetFilterBtn) resetFilterBtn.addEventListener('click', () => fetchCustomers());
+
+    // Khởi tạo các chức năng khi tải trang
+    setDefaultDates(); // Thiết lập ngày mặc định cho bộ lọc
     fetchCustomers();
     populateDropdowns();
+    
+    // Khởi tạo lịch cho các ô trong form popup
     flatpickr("#ngayKyHD", { dateFormat: "d/m/Y" });
     flatpickr("#ngayXHD", { dateFormat: "d/m/Y" });
 });
