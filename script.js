@@ -1,7 +1,8 @@
 // ===============================================================
-// FILE: script.js (Hoàn thiện cuối cùng)
+// FILE: script.js (Hoàn thiện cuối cùng - Giao diện & Chức năng)
 // ===============================================================
 
+// !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
 let allCustomersData = [];
@@ -26,7 +27,7 @@ function showMessage(msg, type) {
 function formatDate(dateString, includeTime = false) {
     if (!dateString) return '';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
+    if (isNaN(date.getTime())) return dateString; 
 
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -48,7 +49,12 @@ function setDefaultDates() {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const flatpickrConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d" };
+    const flatpickrConfig = {
+        altInput: true,
+        altFormat: "d/m/Y",
+        dateFormat: "Y-m-d",
+        allowInput: true,
+    };
     flatpickr(startDateInput, { ...flatpickrConfig, defaultDate: firstDay });
     flatpickr(endDateInput, { ...flatpickrConfig, defaultDate: lastDay });
 }
@@ -153,10 +159,12 @@ async function fetchCustomers(filter = {}) {
 
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
-    if (!customer) { return; }
-    
+    if (!customer) {
+        console.error("Không tìm thấy khách hàng với ID:", customerId);
+        return;
+    }
     document.getElementById('id').value = customer.id;
-    const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
+    const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) {
@@ -274,6 +282,7 @@ async function populateDropdowns() {
 // ===============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Lấy các phần tử DOM
     const form = document.getElementById('addCustomerForm');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const addCustomerBtn = document.getElementById('addCustomerBtn');
@@ -287,6 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterByDeliveryBtn = document.getElementById('filterByDeliveryBtn');
     const resetFilterBtn = document.getElementById('resetFilterBtn');
 
+    // Gán sự kiện
     if(addCustomerBtn) { addCustomerBtn.addEventListener('click', () => { resetFormToAddMode(); openModal(); }); }
     if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if(customerModal) { customerModal.addEventListener('click', (event) => { if (event.target === customerModal) closeModal(); }); }
@@ -304,21 +314,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const performSearch = () => {
         const searchTerm = searchInput.value.toLowerCase().trim();
-        const searchResults = allCustomersData.filter(customer => {
+        // Lọc từ bộ dữ liệu đã được lọc theo ngày tháng (nếu có)
+        const dataToSearch = currentlyDisplayedData;
+        const searchResults = dataToSearch.filter(customer => {
             return (customer.tenKhachHang || '').toLowerCase().includes(searchTerm) ||
                    (customer.sdt || '').includes(searchTerm);
         });
-        currentlyDisplayedData = searchResults;
-        renderTable(currentlyDisplayedData);
+        renderTable(searchResults);
     };
-
+    
     if(searchBtn) searchBtn.addEventListener('click', performSearch);
     if(searchInput) searchInput.addEventListener('keyup', (event) => {
         if (event.key === 'Enter') {
             performSearch();
-        } else if (searchInput.value.trim() === '') {
-            currentlyDisplayedData = allCustomersData;
-            renderTable(currentlyDisplayedData);
         }
     });
 
@@ -343,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Khởi tạo
     setDefaultDates();
     fetchCustomers();
     populateDropdowns();
