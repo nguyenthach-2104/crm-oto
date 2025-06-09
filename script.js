@@ -27,7 +27,7 @@ function showMessage(msg, type) {
 function formatDate(dateString, includeTime = false) {
     if (!dateString) return '';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; 
+    if (isNaN(date.getTime())) return '';
 
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -86,7 +86,9 @@ function renderTable(customerData) {
         customerData.forEach((customer, index) => {
             const row = document.createElement('tr');
             row.id = `row-${customer.id}`;
-            const firstLineOfNote = String(customer.ghiChu || '').split('\n')[0];
+            // Sửa lỗi hiển thị ghi chú
+            const noteAsString = String(customer.ghiChu || '');
+            const firstLineOfNote = noteAsString.split('\n')[0];
 
             row.innerHTML = `
                 <td>${index + 1}</td>
@@ -98,7 +100,7 @@ function renderTable(customerData) {
                 <td>${customer.trangThai || ''}</td>
                 <td>${formatDate(customer.ngayKyHD, false)}</td>
                 <td>${formatDate(customer.ngayXHD, false)}</td>
-                <td><pre class="notes-preview" title="${customer.ghiChu || ''}">${firstLineOfNote}</pre></td>
+                <td><pre class="notes-preview" title="${noteAsString}">${firstLineOfNote}</pre></td>
                 <td><button class="edit-btn" data-id="${customer.id}">Sửa</button></td>
             `;
             customerTableBody.appendChild(row);
@@ -159,12 +161,10 @@ async function fetchCustomers(filter = {}) {
 
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
-    if (!customer) {
-        console.error("Không tìm thấy khách hàng với ID:", customerId);
-        return;
-    }
+    if (!customer) { return; }
+    
     document.getElementById('id').value = customer.id;
-    const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD'];
+    const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) {
@@ -314,11 +314,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const performSearch = () => {
         const searchTerm = searchInput.value.toLowerCase().trim();
-        // Lọc từ bộ dữ liệu đã được lọc theo ngày tháng (nếu có)
+        // Lọc từ bộ dữ liệu gốc (allCustomersData) đã được tải về và lọc theo ngày
         const dataToSearch = currentlyDisplayedData;
         const searchResults = dataToSearch.filter(customer => {
-            return (customer.tenKhachHang || '').toLowerCase().includes(searchTerm) ||
-                   (customer.sdt || '').includes(searchTerm);
+            // SỬA LỖI: Chuyển đổi an toàn sang String trước khi tìm kiếm
+            const name = String(customer.tenKhachHang || '').toLowerCase();
+            const phone = String(customer.sdt || '');
+            return name.includes(searchTerm) || phone.includes(searchTerm);
         });
         renderTable(searchResults);
     };
@@ -351,11 +353,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Khởi tạo
+    // Khởi tạo các chức năng chính
     setDefaultDates();
     fetchCustomers();
     populateDropdowns();
-    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", allowInput: true };
+    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "d/m/Y", allowInput: true };
     flatpickr("#ngayKyHD", formDateConfig);
     flatpickr("#ngayXHD", formDateConfig);
 });
