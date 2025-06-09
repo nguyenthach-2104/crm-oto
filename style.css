@@ -1,4 +1,188 @@
-/* --- CSS cho Popup (Modal) --- */
+/* --- CÀI ĐẶT CHUNG & FONT --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f6f9;
+    color: #333;
+    display: flex; /* Bật Flexbox để chia layout */
+}
+
+/* --- LAYOUT CHÍNH VỚI SIDEBAR MENU --- */
+.sidebar {
+    width: 220px;
+    background-color: #2c3e50; /* Màu nền tối cho menu */
+    color: white;
+    height: 100vh; /* Cao bằng màn hình */
+    position: fixed; /* Cố định menu khi cuộn trang */
+    top: 0;
+    left: 0;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar h2 {
+    text-align: center;
+    padding: 0 20px;
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar nav li a {
+    display: block;
+    padding: 15px 25px;
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: background-color 0.2s ease-in-out;
+    border-left: 3px solid transparent;
+}
+
+.sidebar nav li a:hover {
+    background-color: #34495e;
+}
+
+.sidebar nav li a.active {
+    background-color: #1abc9c;
+    border-left: 3px solid #16a085;
+    font-weight: bold;
+}
+
+.main-content {
+    margin-left: 220px; /* Tạo khoảng trống bằng độ rộng của menu */
+    padding: 25px;
+    width: calc(100% - 220px); /* Chiếm phần còn lại của màn hình */
+    box-sizing: border-box;
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* --- FORM NHẬP LIỆU --- */
+.form-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px; 
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.grid-form input,
+.grid-form textarea,
+.grid-form select,
+.grid-form button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.grid-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.grid-form button[type="submit"] {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+.grid-form button[type="submit"]:hover {
+    background-color: #2980b9;
+}
+.grid-form button[type="button"]#cancelEditBtn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+
+/* --- BỘ LỌC VÀ BẢNG DỮ LIỆU --- */
+.filter-section, .table-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-controls input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.main-actions, .filter-controls button {
+    padding: 10px 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #ecf0f1;
+    cursor: pointer;
+    font-weight: bold;
+}
+.main-actions button:hover, .filter-controls button:hover {
+    background-color: #bdc3c7;
+}
+
+.table-wrapper {
+    overflow-x: auto; /* Thêm thanh cuộn ngang nếu bảng quá rộng */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+thead {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* --- POPUP (MODAL) --- */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.6); z-index: 999;
@@ -16,65 +200,12 @@
     color: #888;
 }
 .close-btn:hover { color: #000; }
-.main-actions { padding: 10px 0; display: flex; gap: 10px; }
 
-/* CSS cho khu vực hiển thị log ghi chú */
 #oldNotesDisplay {
-    margin-top: 15px;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-    max-height: 200px;
-    overflow-y: auto;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    padding: 10px;
+    margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;
+    max-height: 200px; overflow-y: auto; background-color: #f9f9f9;
+    border-radius: 4px; padding: 10px;
     white-space: pre-wrap; /* Hiển thị các dấu xuống dòng */
-    font-size: 13px;
-    color: #333;
-}
-/* --- CSS cho Layout chính và Sidebar Menu --- */
-body {
-    display: flex; /* Bật Flexbox để chia layout */
-    margin: 0;
-}
-
-.sidebar {
-    width: 220px; /* Độ rộng của menu */
-    background-color: #2c3e50; /* Màu nền tối cho menu */
-    color: white;
-    height: 100vh; /* Cao bằng màn hình */
-    position: fixed; /* Cố định menu khi cuộn trang */
-    top: 0;
-    left: 0;
-    padding: 20px 0;
-}
-
-.sidebar h2 {
-    text-align: center;
-    padding: 0 20px;
-    margin-bottom: 30px;
-}
-
-.sidebar nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar nav li a {
-    display: block;
-    padding: 15px 25px;
-    color: #ecf0f1;
-    text-decoration: none;
-    transition: background-color 0.3s;
-}
-
-.sidebar nav li a:hover, .sidebar nav li a.active {
-    background-color: #34495e;
-}
-
-.main-content {
-    margin-left: 220px; /* Tạo khoảng trống bằng độ rộng của menu */
-    padding: 20px;
-    width: calc(100% - 220px); /* Chiếm phần còn lại của màn hình */
+    font-size: 13px; color: #333;
+    line-height: 1.6;
 }
