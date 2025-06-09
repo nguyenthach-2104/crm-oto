@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM Ô Tô</title>
     <link rel="stylesheet" href="style.css">
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
@@ -30,7 +29,6 @@
         <main>
             <div class="main-actions">
                 <button id="addCustomerBtn">Thêm Khách Hàng Mới</button>
-                <button id="loadDataBtn">Tải lại Dữ liệu</button>
             </div>
 
             <section class="filter-section">
@@ -41,7 +39,7 @@
                     <button id="filterByTimestampBtn">Lọc theo Ngày Tạo</button>
                     <button id="filterByContractBtn">Lọc theo Ngày Ký HĐ</button>
                     <button id="filterByDeliveryBtn">Lọc theo Ngày XHĐ</button>
-                    <button id="resetFilterBtn">Bỏ lọc</button>
+                    <button id="resetFilterBtn">Bỏ lọc & Tải lại</button>
                 </div>
             </section>
 
@@ -51,16 +49,18 @@
                     <table id="customerTable">
                         <thead>
                             <tr>
+                                <th>Ngày tạo</th>
                                 <th>Tên KH</th>
                                 <th>SDT</th>
                                 <th>Trạng Thái</th>
-                                <th>Nhân Viên</th>
-                                <th>Ngày Tạo</th>
+                                <th>Ngày Ký HĐ</th>
+                                <th>Ngày Giao Xe</th>
+                                <th>Ghi chú</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                             <tr><td colspan="6">Đang tải dữ liệu...</td></tr>
+                            <tr><td colspan="8">Đang tải dữ liệu...</td></tr>
                         </tbody>
                     </table>
                 </div>
