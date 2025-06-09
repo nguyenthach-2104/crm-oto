@@ -1,5 +1,5 @@
 // ===============================================================
-// FILE: script.js (Phiên bản đầy đủ, hoàn thiện tất cả chức năng)
+// FILE: script.js (Phiên bản đầy đủ, xử lý lỗi phản hồi)
 // ===============================================================
 
 // !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
@@ -22,18 +22,10 @@ function showMessage(msg, type) {
     }
 }
 
-/**
- * Hàm định dạng ngày tháng đa năng
- * @param {string} dateString - Chuỗi ngày tháng từ Google Sheet
- * @param {boolean} includeTime - true nếu muốn hiển thị cả giờ, phút, giây
- * @returns {string} - Chuỗi ngày tháng đã được định dạng dd/mm/yyyy
- */
 function formatDate(dateString, includeTime = false) {
     if (!dateString) return '';
-    
-    // Tạo đối tượng Date. Định dạng chuẩn từ backend giúp việc này đáng tin cậy.
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
+    if (isNaN(date.getTime())) return dateString; 
 
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -45,28 +37,21 @@ function formatDate(dateString, includeTime = false) {
         const seconds = String(date.getSeconds()).padStart(2, '0');
         return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
     }
-    
     return `${day}/${month}/${year}`;
 }
 
-/**
- * Thiết lập ngày mặc định cho bộ lọc (tháng hiện tại)
- */
 function setDefaultDates() {
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     if(!startDateInput || !endDateInput) return;
-
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
     const flatpickrConfig = {
-        altInput: true,      // Hiển thị định dạng thân thiện cho người dùng
-        altFormat: "d/m/Y",  // Định dạng hiển thị (dd/mm/yyyy)
-        dateFormat: "Y-m-d", // Định dạng ẩn đi để gửi lên server (YYYY-MM-DD)
+        altInput: true,
+        altFormat: "d/m/Y",
+        dateFormat: "Y-m-d",
     };
-
     flatpickr(startDateInput, { ...flatpickrConfig, defaultDate: firstDay });
     flatpickr(endDateInput, { ...flatpickrConfig, defaultDate: lastDay });
 }
@@ -111,6 +96,13 @@ async function fetchCustomers(filter = {}) {
         const response = await fetch(url);
         const data = await response.json();
         
+        // KIỂM TRA PHẢN HỒI TỪ SERVER
+        if (!Array.isArray(data)) {
+            console.error("Server đã trả về lỗi:", data.message);
+            customerTableBody.innerHTML = `<tr><td colspan="8">Có lỗi xảy ra: ${data.message || 'Không thể tải dữ liệu.'}</td></tr>`;
+            return; 
+        }
+        
         allCustomersData = data;
         customerTableBody.innerHTML = ''; 
         
@@ -118,6 +110,8 @@ async function fetchCustomers(filter = {}) {
             customerTableBody.innerHTML = '<tr><td colspan="8">Không có dữ liệu khách hàng nào khớp với điều kiện.</td></tr>';
             return;
         }
+
+        data.sort((a, b) => (b.dauThoiGian || '').localeCompare(a.dauThoiGian || ''));
 
         data.forEach(customer => {
             const row = document.createElement('tr');
@@ -141,7 +135,6 @@ async function fetchCustomers(filter = {}) {
     }
 }
 
-
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
     if (!customer) {
@@ -154,7 +147,7 @@ function populateFormForEdit(customerId) {
         const element = document.getElementById(fieldId);
         if (element) {
             if (element.hasOwnProperty('_flatpickr')) {
-                element._flatpickr.setDate(customer[fieldId], false); 
+                element._flatpickr.setDate(customer[fieldId], false);
             } else {
                 element.value = customer[fieldId] || '';
             }
@@ -201,7 +194,7 @@ async function handleAddNewCustomer() {
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
-        if (element) url.searchParams.append(fieldId, element._flatpickr ? element.value : element.value);
+        if (element) url.searchParams.append(fieldId, element.value);
     });
     try {
         const response = await fetch(url);
@@ -224,7 +217,7 @@ async function handleUpdateCustomer(customerId) {
     const fields = ['id', 'tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
-        if (element) url.searchParams.append(fieldId, element._flatpickr ? element.value : element.value);
+        if (element) url.searchParams.append(fieldId, element.value);
     });
     try {
         const response = await fetch(url);
@@ -260,13 +253,11 @@ async function populateDropdowns() {
     } catch (error) { console.error("Lỗi khi tải dữ liệu cho dropdown:", error); }
 }
 
-
 // ===============================================================
 // KHỐI LỆNH CHẠY KHI TẢI TRANG
 // ===============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Lấy các phần tử DOM
     const form = document.getElementById('addCustomerForm');
     const loadDataBtn = document.getElementById('loadDataBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -274,15 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const customerModal = document.getElementById('customerModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const customerTableBody = document.querySelector('#customerTable tbody');
-
-    // Gán sự kiện
     if(addCustomerBtn) { addCustomerBtn.addEventListener('click', () => { resetFormToAddMode(); openModal(); }); }
     if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if(customerModal) { customerModal.addEventListener('click', (event) => { if (event.target === customerModal) closeModal(); }); }
     if(form) form.addEventListener('submit', handleSubmit);
     if(loadDataBtn) loadDataBtn.addEventListener('click', () => fetchCustomers());
     if(cancelEditBtn) cancelEditBtn.addEventListener('click', resetFormToAddMode);
-    
     if (customerTableBody) {
         customerTableBody.addEventListener('click', (event) => {
             if (event.target.classList.contains('edit-btn')) {
@@ -291,13 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    // Gán sự kiện cho các nút lọc
     const filterByTimestampBtn = document.getElementById('filterByTimestampBtn');
     const filterByContractBtn = document.getElementById('filterByContractBtn');
     const filterByDeliveryBtn = document.getElementById('filterByDeliveryBtn');
     const resetFilterBtn = document.getElementById('resetFilterBtn');
-
     const handleFilterClick = (filterType) => {
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
@@ -307,19 +292,15 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Vui lòng chọn ngày bắt đầu và ngày kết thúc.");
         }
     };
-    
     if (filterByTimestampBtn) filterByTimestampBtn.addEventListener('click', () => handleFilterClick('dauThoiGian'));
     if (filterByContractBtn) filterByContractBtn.addEventListener('click', () => handleFilterClick('ngayKyHD'));
     if (filterByDeliveryBtn) filterByDeliveryBtn.addEventListener('click', () => handleFilterClick('ngayXHD'));
     if (resetFilterBtn) resetFilterBtn.addEventListener('click', () => fetchCustomers());
 
-    // Khởi tạo các chức năng chính
     setDefaultDates();
     fetchCustomers();
     populateDropdowns();
-    
-    // Khởi tạo lịch cho các ô trong form popup
-    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "d/m/Y", allowInput: true };
+    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", allowInput: true };
     flatpickr("#ngayKyHD", formDateConfig);
     flatpickr("#ngayXHD", formDateConfig);
 });
