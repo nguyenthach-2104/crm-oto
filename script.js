@@ -1,39 +1,15 @@
 // ===============================================================
-// FILE: script.js (Phiên bản cuối cùng, sửa lỗi Sắp xếp)
+// FILE: script.js (Phiên bản hoàn thiện cuối cùng)
 // ===============================================================
 
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
 let allCustomersData = [];
 
-/**
- * HÀM TRỢ GIÚP MỚI: Chuyển đổi chuỗi ngày tháng (cả dd/mm/yyyy và yyyy-mm-dd) thành đối tượng Date
- */
-function parseDate(dateString) {
-    if (!dateString || typeof dateString !== 'string') return null;
-    
-    // Thử định dạng yyyy-mm-dd hh:mm:ss (chuẩn)
-    let date = new Date(dateString);
-    if (!isNaN(date.getTime())) {
-        return date;
-    }
+// ===============================================================
+// CÁC HÀM CHÍNH
+// ===============================================================
 
-    // Thử định dạng dd/mm/yyyy...
-    const parts = dateString.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
-    if (parts) {
-        // parts[1]=dd, parts[2]=mm, parts[3]=yyyy
-        date = new Date(parts[3], parts[2] - 1, parts[1]);
-        if (!isNaN(date.getTime())) {
-            return date;
-        }
-    }
-    
-    return null; // Trả về null nếu không thể chuyển đổi
-}
-
-/**
- * HÀM ĐƯỢC CẬP NHẬT: Thêm logic sort ở front-end
- */
 async function fetchCustomers() {
     const customerTableBody = document.querySelector('#customerTable tbody');
     customerTableBody.innerHTML = '<tr><td colspan="6">Đang tải dữ liệu...</td></tr>';
@@ -63,12 +39,16 @@ async function fetchCustomers() {
         const response = await fetch(url);
         let data = await response.json();
         
+        // *** PHẦN SẮP XẾP ĐƯỢC SỬA LẠI CHO CHÍNH XÁC ***
         if (Array.isArray(data)) {
-            // SẮP XẾP DỮ LIỆU Ở ĐÂY, DÙNG HÀM PARSEDATE MỚI
             data.sort((a, b) => {
-                const dateA = parseDate(a.dauThoiGian);
-                const dateB = parseDate(b.dauThoiGian);
-                return (dateB || 0) - (dateA || 0);
+                // So sánh trực tiếp chuỗi ký tự YYYY-MM-DD HH:mm:ss là cách đáng tin cậy
+                const timeA = a.dauThoiGian || '';
+                const timeB = b.dauThoiGian || '';
+                // So sánh ngược để đưa giá trị mới hơn (lớn hơn) lên đầu
+                if (timeB < timeA) return -1;
+                if (timeB > timeA) return 1;
+                return 0;
             });
         }
         
@@ -88,7 +68,7 @@ async function fetchCustomers() {
                 <td>${customer.sdt || ''}</td>
                 <td>${customer.trangThai || ''}</td>
                 <td>${customer.tenNhanVien || ''}</td>
-                <td>${customer.dauThoiGian ? new Date(parseDate(customer.dauThoiGian)).toLocaleString('vi-VN') : ''}</td>
+                <td>${customer.dauThoiGian ? new Date(customer.dauThoiGian).toLocaleString('vi-VN') : ''}</td>
                 <td><button class="edit-btn" data-id="${customer.id}">Sửa</button></td>
             `;
             customerTableBody.appendChild(row);
@@ -96,11 +76,12 @@ async function fetchCustomers() {
 
     } catch (error) {
         customerTableBody.innerHTML = `<tr><td colspan="6">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
+        console.error("Lỗi fetchCustomers: ", error);
     }
 }
 
 
-// ... (Tất cả các hàm khác từ populateFormForEdit đến hết file giữ nguyên như phiên bản đầy đủ trước đó) ...
+// ... (Tất cả các hàm khác từ populateFormForEdit đến hết file giữ nguyên như cũ) ...
 // Để đảm bảo, tôi sẽ dán lại toàn bộ các hàm còn lại.
 
 function populateFormForEdit(customerId) {
@@ -139,17 +120,6 @@ async function handleSubmit(event) {
     if (editId) { handleUpdateCustomer(editId); } 
     else { handleAddNewCustomer(); }
 }
-
-async function handleAddNewCustomer() { /* Giữ nguyên như cũ */ }
-async function handleUpdateCustomer(customerId) { /* Giữ nguyên như cũ */ }
-async function populateDropdowns() { /* Giữ nguyên như cũ */ }
-function showMessage(msg, type) { /* Giữ nguyên như cũ */ }
-function openModal() { document.getElementById('customerModal').style.display = 'flex'; }
-function closeModal() { document.getElementById('customerModal').style.display = 'none'; }
-
-document.addEventListener('DOMContentLoaded', () => { /* Giữ nguyên như cũ */ });
-
-// Dán lại các hàm còn thiếu để bạn có file đầy đủ nhất
 
 async function handleAddNewCustomer() {
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
@@ -224,6 +194,9 @@ function showMessage(msg, type) {
     const messageDiv = document.getElementById('message');
     if (messageDiv) { messageDiv.textContent = msg; messageDiv.className = type; }
 }
+
+function openModal() { document.getElementById('customerModal').style.display = 'flex'; }
+function closeModal() { document.getElementById('customerModal').style.display = 'none'; }
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('addCustomerForm');
