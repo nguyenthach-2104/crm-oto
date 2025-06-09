@@ -1,29 +1,49 @@
 // ===============================================================
-// FILE: script.js (Hoàn thiện Lọc và Giao diện Bảng mới)
+// FILE: script.js (Hoàn thiện cuối cùng)
 // ===============================================================
 
-// !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
-let allCustomersData = []; // Biến toàn cục để lưu trữ dữ liệu khách hàng
+let allCustomersData = [];
 
 // ===============================================================
-// CÁC HÀM ĐIỀU KHIỂN POPUP
-// ===============================================================
-function openModal() {
-    document.getElementById('customerModal').style.display = 'flex';
-}
-function closeModal() {
-    document.getElementById('customerModal').style.display = 'none';
-}
-
-// ===============================================================
-// CÁC HÀM XỬ LÝ DỮ LIỆU CHÍNH
+// HÀM TRỢ GIÚP MỚI
 // ===============================================================
 
 /**
- * Hàm ĐỌC dữ liệu, có thể nhận tham số lọc và hiển thị ra bảng mới
- * @param {object} filter - Đối tượng chứa thông tin lọc
+ * Hàm định dạng ngày tháng đa năng
+ * @param {string} dateString - Chuỗi ngày tháng từ Google Sheet
+ * @param {boolean} includeTime - true nếu muốn hiển thị cả giờ, phút, giây
+ * @returns {string} - Chuỗi ngày tháng đã được định dạng
+ */
+function formatDate(dateString, includeTime = false) {
+    if (!dateString) return '';
+    
+    // Tạo đối tượng Date, ưu tiên định dạng YYYY-MM-DD
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return ''; // Trả về rỗng nếu ngày không hợp lệ
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+    const year = date.getFullYear();
+
+    if (includeTime) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
+    }
+    
+    return `${day}/${month}/${year}`;
+}
+
+
+// ===============================================================
+// CÁC HÀM CHÍNH
+// ===============================================================
+
+/**
+ * HÀM ĐƯỢC CẬP NHẬT: Sử dụng formatDate để hiển thị ngày tháng
  */
 async function fetchCustomers(filter = {}) {
     const customerTableBody = document.querySelector('#customerTable tbody');
@@ -50,7 +70,6 @@ async function fetchCustomers(filter = {}) {
     url.searchParams.append('name', loggedInUser.HoTen || '');
     url.searchParams.append('team', loggedInUser.Nhom || '');
 
-    // Gửi thông tin lọc nếu có
     if (filter.type && filter.start && filter.end) {
         url.searchParams.append('filterType', filter.type);
         url.searchParams.append('startDate', filter.start);
@@ -59,9 +78,9 @@ async function fetchCustomers(filter = {}) {
     
     try {
         const response = await fetch(url);
-        const data = await response.json();
+        let data = await response.json();
         
-        allCustomersData = data; // Dữ liệu trả về từ backend đã được lọc và sắp xếp
+        allCustomersData = data;
         customerTableBody.innerHTML = ''; 
         
         if (data.length === 0) {
@@ -72,14 +91,14 @@ async function fetchCustomers(filter = {}) {
         data.forEach(customer => {
             const row = document.createElement('tr');
             row.id = `row-${customer.id}`;
-            // Cập nhật lại các cột hiển thị theo yêu cầu mới
+            // SỬ DỤNG HÀM formatDate ĐỂ HIỂN THỊ
             row.innerHTML = `
-                <td>${customer.dauThoiGian ? new Date(customer.dauThoiGian).toLocaleString('vi-VN') : ''}</td>
+                <td>${formatDate(customer.dauThoiGian, true)}</td>
                 <td>${customer.tenKhachHang || ''}</td>
                 <td>${customer.sdt || ''}</td>
                 <td>${customer.trangThai || ''}</td>
-                <td>${customer.ngayKyHD || ''}</td>
-                <td>${customer.ngayXHD || ''}</td>
+                <td>${formatDate(customer.ngayKyHD, false)}</td>
+                <td>${formatDate(customer.ngayXHD, false)}</td>
                 <td><pre class="notes-preview">${customer.ghiChu || ''}</pre></td>
                 <td><button class="edit-btn" data-id="${customer.id}">Sửa</button></td>
             `;
@@ -92,22 +111,31 @@ async function fetchCustomers(filter = {}) {
     }
 }
 
-/**
- * Điền dữ liệu của khách hàng vào form để chỉnh sửa
- * @param {string} customerId - ID của khách hàng được chọn
- */
+
+// ... (Tất cả các hàm khác từ populateFormForEdit đến hết file giữ nguyên như cũ) ...
+// Để đảm bảo, tôi sẽ dán lại toàn bộ các hàm còn lại.
+
+function openModal() { document.getElementById('customerModal').style.display = 'flex'; }
+function closeModal() { document.getElementById('customerModal').style.display = 'none'; }
+function showMessage(msg, type) {
+    const messageDiv = document.getElementById('message');
+    if (messageDiv) { messageDiv.textContent = msg; messageDiv.className = type; }
+}
+
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
-    if (!customer) {
-        console.error("Không tìm thấy khách hàng với ID:", customerId);
-        return;
-    }
+    if (!customer) { console.error("Không tìm thấy khách hàng với ID:", customerId); return; }
     document.getElementById('id').value = customer.id;
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) {
-            element.value = customer[fieldId] || '';
+             // Với các ô flatpickr, cần dùng API của nó để đặt ngày
+            if (element.hasOwnProperty('_flatpickr')) {
+                element._flatpickr.setDate(customer[fieldId], false); // false để không trigger event
+            } else {
+                element.value = customer[fieldId] || '';
+            }
         }
     });
     const oldNotesDiv = document.getElementById('oldNotesDisplay');
@@ -121,52 +149,38 @@ function populateFormForEdit(customerId) {
     openModal();
 }
 
-/**
- * Reset form về trạng thái "Thêm mới"
- */
 function resetFormToAddMode() {
     document.getElementById('id').value = ''; 
     document.getElementById('addCustomerForm').reset();
     document.getElementById('formTitle').textContent = 'Thêm khách hàng mới';
     document.getElementById('submitBtn').textContent = 'Thêm mới';
     document.getElementById('cancelEditBtn').style.display = 'none';
-    document.getElementById('oldNotesDisplay').style.display = 'none';
+    const oldNotesDiv = document.getElementById('oldNotesDisplay');
+    if (oldNotesDiv) oldNotesDiv.style.display = 'none';
     document.getElementById('ghiChu').placeholder = "Ghi chú";
 }
 
-/**
- * Xử lý chính khi submit form: Quyết định là Thêm mới hay Cập nhật
- */
 async function handleSubmit(event) {
     event.preventDefault();
     const editId = document.getElementById('id').value;
-    if (editId) {
-        handleUpdateCustomer(editId);
-    } else {
-        handleAddNewCustomer();
-    }
+    if (editId) { handleUpdateCustomer(editId); } 
+    else { handleAddNewCustomer(); }
 }
 
-/**
- * Xử lý logic Thêm mới khách hàng
- */
 async function handleAddNewCustomer() {
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'addCustomer');
-    
     url.searchParams.append('id', 'KH' + Date.now());
     const now = new Date();
     const formattedTimestamp = now.toLocaleString("en-CA", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }).replace(/, /g, " ").slice(0, 19);
     url.searchParams.append('dauThoiGian', formattedTimestamp);
     url.searchParams.append('tenNhanVien', loggedInUser ? loggedInUser.HoTen : "Không xác định");
-
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) url.searchParams.append(fieldId, element.value);
     });
-    
     try {
         const response = await fetch(url);
         const result = await response.json();
@@ -178,21 +192,18 @@ async function handleAddNewCustomer() {
     } catch (error) { showMessage(`Lỗi khi thêm khách hàng: ${error.message}`, 'error'); }
 }
 
-/**
- * Xử lý logic Cập nhật khách hàng
- */
 async function handleUpdateCustomer(customerId) {
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'updateCustomer');
     url.searchParams.append('updaterName', loggedInUser.HoTen);
-
+    url.searchParams.append('updaterRole', loggedInUser.VaiTro);
+    url.searchParams.append('updaterTeam', loggedInUser.Nhom);
     const fields = ['id', 'tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) url.searchParams.append(fieldId, element.value);
     });
-    
     try {
         const response = await fetch(url);
         const result = await response.json();
@@ -204,9 +215,6 @@ async function handleUpdateCustomer(customerId) {
     } catch (error) { showMessage(`Lỗi khi cập nhật khách hàng: ${error.message}`, 'error'); }
 }
 
-/**
- * Lấy dữ liệu cho các ô dropdown
- */
 async function populateDropdowns() {
     const url = new URL(WEB_APP_URL);
     url.searchParams.append('action', 'getOptions');
@@ -230,17 +238,6 @@ async function populateDropdowns() {
     } catch (error) { console.error("Lỗi khi tải dữ liệu cho dropdown:", error); }
 }
 
-/**
- * Hiển thị thông báo
- */
-function showMessage(msg, type) {
-    const messageDiv = document.getElementById('message');
-    if (messageDiv) { messageDiv.textContent = msg; messageDiv.className = type; }
-}
-
-/**
- * Thiết lập ngày mặc định cho bộ lọc
- */
 function setDefaultDates() {
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
@@ -253,33 +250,20 @@ function setDefaultDates() {
     flatpickr(endDateInput, { ...flatpickrConfig, defaultDate: lastDay });
 }
 
-
-// ===============================================================
-// KHỐI LỆNH CHẠY KHI TẢI TRANG
-// ===============================================================
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Lấy các phần tử DOM
     const form = document.getElementById('addCustomerForm');
+    const loadDataBtn = document.getElementById('loadDataBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const addCustomerBtn = document.getElementById('addCustomerBtn');
     const customerModal = document.getElementById('customerModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const customerTableBody = document.querySelector('#customerTable tbody');
-
-    // Các nút lọc
-    const filterByTimestampBtn = document.getElementById('filterByTimestampBtn');
-    const filterByContractBtn = document.getElementById('filterByContractBtn');
-    const filterByDeliveryBtn = document.getElementById('filterByDeliveryBtn');
-    const resetFilterBtn = document.getElementById('resetFilterBtn');
-
-    // Gán sự kiện
     if(addCustomerBtn) { addCustomerBtn.addEventListener('click', () => { resetFormToAddMode(); openModal(); }); }
     if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if(customerModal) { customerModal.addEventListener('click', (event) => { if (event.target === customerModal) closeModal(); }); }
     if(form) form.addEventListener('submit', handleSubmit);
+    if(loadDataBtn) loadDataBtn.addEventListener('click', () => fetchCustomers());
     if(cancelEditBtn) cancelEditBtn.addEventListener('click', resetFormToAddMode);
-    
     if (customerTableBody) {
         customerTableBody.addEventListener('click', (event) => {
             if (event.target.classList.contains('edit-btn')) {
@@ -288,7 +272,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+    const filterByTimestampBtn = document.getElementById('filterByTimestampBtn');
+    const filterByContractBtn = document.getElementById('filterByContractBtn');
+    const filterByDeliveryBtn = document.getElementById('filterByDeliveryBtn');
+    const resetFilterBtn = document.getElementById('resetFilterBtn');
+
     const handleFilterClick = (filterType) => {
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
@@ -304,10 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterByDeliveryBtn) filterByDeliveryBtn.addEventListener('click', () => handleFilterClick('ngayXHD'));
     if (resetFilterBtn) resetFilterBtn.addEventListener('click', () => fetchCustomers());
 
-    // Khởi tạo
     setDefaultDates();
     fetchCustomers();
     populateDropdowns();
-    flatpickr("#ngayKyHD", { dateFormat: "d/m/Y" });
-    flatpickr("#ngayXHD", { dateFormat: "d/m/Y" });
+    flatpickr("#ngayKyHD", { dateFormat: "d/m/Y", allowInput: true });
+    flatpickr("#ngayXHD", { dateFormat: "d/m/Y", allowInput: true });
 });
