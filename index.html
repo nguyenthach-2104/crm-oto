@@ -10,12 +10,34 @@
 </head>
 <body>
     <header class="main-header">
-        <h1>Trang quản lý Khách hàng</h1>
+        <h1>Khách hàng</h1>
         <div id="userInfo"></div>
     </header>
+    
     <main>
-        <section class="form-section">
-            <h2 id="formTitle">Thêm khách hàng mới</h2>
+        <div class="main-actions">
+            <button id="addCustomerBtn">Thêm Khách Hàng Mới</button>
+            <button id="loadDataBtn">Tải lại Dữ liệu</button>
+        </div>
+
+        <section class="table-section">
+            <div class="table-wrapper">
+                <table id="customerTable">
+                    <thead>
+                        <tr>
+                            <th>Tên KH</th><th>SDT</th><th>Trạng Thái</th><th>Nhân Viên</th><th>Ngày Tạo</th><th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="customerModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="closeModalBtn" class="close-btn">&times;</button>
+            <h2 id="formTitle"></h2>
             <form id="addCustomerForm" class="grid-form">
                 <input type="hidden" id="id">
                 <input type="text" id="tenKhachHang" placeholder="Tên khách hàng (*)" required>
@@ -32,35 +54,15 @@
                 <select id="laiThu"><option value="">-- Lái thử? --</option><option>Có</option><option>Không</option></select>
                 <input type="text" id="ngayKyHD" placeholder="Ngày ký HĐ">
                 <input type="text" id="ngayXHD" placeholder="Ngày XHĐ">
-                <textarea id="ghiChu" placeholder="Ghi chú" class="full-width"></textarea>
-                <button type="submit" class="full-width" id="submitBtn">Thêm mới</button>
-                <button type="button" class="full-width" id="cancelEditBtn" style="display: none;">Hủy Sửa</button>
+                <textarea id="ghiChu" placeholder="Thêm ghi chú mới tại đây..." class="full-width"></textarea>
+                <button type="submit" class="full-width" id="submitBtn"></button>
+                <button type="button" class="full-width" id="cancelEditBtn" style="display: none;">Hủy</button>
+                <div id="oldNotesDisplay"></div>
             </form>
             <div id="message"></div>
-        </section>
-        <hr>
-        <section class="table-section">
-            <h2>Danh sách khách hàng</h2>
-            <button id="loadDataBtn">Tải lại danh sách</button>
-            <div class="table-wrapper">
-                <table id="customerTable">
-                    <thead>
-                        <tr>
-                            <th>Tên KH</th>
-                            <th>SDT</th>
-                            <th>Trạng Thái</th>
-                            <th>Nhân Viên</th>
-                            <th>Ngày Tạo</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="6">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+        </div>
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
