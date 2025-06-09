@@ -126,6 +126,7 @@ body {
     font-size: 14px;
 }
 
+
 /* --- BẢNG DỮ LIỆU --- */
 .table-section {
     background-color: #fff;
@@ -177,7 +178,7 @@ tbody tr:nth-child(even) {
 .modal-content {
     background-color: white; padding: 20px 30px; border-radius: 8px;
     width: 90%; 
-    max-width: 800px; /* << SỬ DỤNG LẠI GIỚI HẠN CHIỀU RỘNG */
+    max-width: 800px; /* << Trả về giới hạn chiều rộng như cũ */
     max-height: 90vh;
     overflow-y: auto; position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -222,4 +223,12 @@ tbody tr:nth-child(even) {
 }
 .grid-form button[type="button"]#cancelEditBtn {
     background-color: #95a5a6; color: white; border: none; cursor: pointer;
+}
+#oldNotesDisplay {
+    margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;
+    background-color: #f9f9f9; border-radius: 4px; padding: 10px;
+    white-space: pre-wrap;
+    font-size: 13px; color: #333;
+    line-height: 1.6;
+    /* Bỏ giới hạn chiều cao */
 }
