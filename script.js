@@ -26,7 +26,7 @@ function showMessage(msg, type) {
 function formatDate(dateString, includeTime = false) {
     if (!dateString) return '';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; 
+    if (isNaN(date.getTime())) return '';
 
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -48,15 +48,11 @@ function setDefaultDates() {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const flatpickrConfig = {
-        altInput: true,
-        altFormat: "d/m/Y",
-        dateFormat: "Y-m-d",
-        allowInput: true,
-    };
+    const flatpickrConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d" };
     flatpickr(startDateInput, { ...flatpickrConfig, defaultDate: firstDay });
     flatpickr(endDateInput, { ...flatpickrConfig, defaultDate: lastDay });
 }
+
 
 // ===============================================================
 // CÁC HÀM XỬ LÝ DỮ LIỆU CHÍNH
@@ -67,46 +63,46 @@ function renderTable(customerData) {
     const summaryInfo = document.getElementById('summaryInfo');
     customerTableBody.innerHTML = ''; 
 
-    if (customerData.length === 0) {
-        customerTableBody.innerHTML = '<tr><td colspan="9">Không có dữ liệu khách hàng nào khớp với điều kiện.</td></tr>';
-        summaryInfo.textContent = 'Hiển thị: 0 khách hàng';
-        return;
-    }
-
     let contractCount = 0;
     let deliveryCount = 0;
+    if (Array.isArray(customerData)) {
+        customerData.forEach(customer => {
+            if (customer.ngayKyHD) contractCount++;
+            if (customer.ngayXHD) deliveryCount++;
+        });
+        summaryInfo.textContent = `Hiển thị: ${customerData.length} KH | Ký HĐ: ${contractCount} | Xuất HĐ: ${deliveryCount}`;
 
-    customerData.forEach((customer, index) => {
-        if (customer.ngayKyHD) contractCount++;
-        if (customer.ngayXHD) deliveryCount++;
+        if (customerData.length === 0) {
+            customerTableBody.innerHTML = `<tr><td colspan="11">Không có dữ liệu khách hàng nào khớp với điều kiện.</td></tr>`;
+            return;
+        }
 
-        const row = document.createElement('tr');
-        row.id = `row-${customer.id}`;
-        
-        // SỬA LỖI: Chuyển đổi ghi chú thành String một cách an toàn trước khi cắt
-        const noteAsString = String(customer.ghiChu || '');
-        const firstLineOfNote = noteAsString.split('\n')[0];
+        customerData.forEach((customer, index) => {
+            const row = document.createElement('tr');
+            row.id = `row-${customer.id}`;
+            const firstLineOfNote = String(customer.ghiChu || '').split('\n')[0];
 
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${formatDate(customer.dauThoiGian, true)}</td>
-            <td>${customer.tenKhachHang || ''}</td>
-            <td>${customer.sdt || ''}</td>
-            <td>${customer.tinhThanh || ''}</td>
-            <td>${customer.loaiXe || ''}</td>
-            <td>${customer.trangThai || ''}</td>
-            <td><pre class="notes-preview" title="${noteAsString}">${firstLineOfNote}</pre></td>
-            <td><button class="edit-btn" data-id="${customer.id}">Sửa</button></td>
-        `;
-        customerTableBody.appendChild(row);
-    });
-
-    summaryInfo.textContent = `Hiển thị: ${customerData.length} KH | Ký HĐ: ${contractCount} | Giao xe: ${deliveryCount}`;
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${formatDate(customer.dauThoiGian, true)}</td>
+                <td>${customer.tenKhachHang || ''}</td>
+                <td>${customer.sdt || ''}</td>
+                <td>${customer.tinhThanh || ''}</td>
+                <td>${customer.loaiXe || ''}</td>
+                <td>${customer.trangThai || ''}</td>
+                <td>${formatDate(customer.ngayKyHD, false)}</td>
+                <td>${formatDate(customer.ngayXHD, false)}</td>
+                <td><pre class="notes-preview" title="${customer.ghiChu || ''}">${firstLineOfNote}</pre></td>
+                <td><button class="edit-btn" data-id="${customer.id}">Sửa</button></td>
+            `;
+            customerTableBody.appendChild(row);
+        });
+    }
 }
 
 async function fetchCustomers(filter = {}) {
     const customerTableBody = document.querySelector('#customerTable tbody');
-    customerTableBody.innerHTML = '<tr><td colspan="9">Đang tải dữ liệu...</td></tr>';
+    customerTableBody.innerHTML = '<tr><td colspan="11">Đang tải dữ liệu...</td></tr>';
     
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
     if (!loggedInUser) {
@@ -141,7 +137,7 @@ async function fetchCustomers(filter = {}) {
         
         if (!Array.isArray(data)) {
             console.error("Server đã trả về lỗi:", data.message);
-            customerTableBody.innerHTML = `<tr><td colspan="9">Có lỗi xảy ra: ${data.message || 'Không thể tải dữ liệu.'}</td></tr>`;
+            customerTableBody.innerHTML = `<tr><td colspan="11">Có lỗi xảy ra: ${data.message || 'Không thể tải dữ liệu.'}</td></tr>`;
             return; 
         }
         
@@ -150,34 +146,34 @@ async function fetchCustomers(filter = {}) {
         renderTable(currentlyDisplayedData);
 
     } catch (error) {
-        customerTableBody.innerHTML = `<tr><td colspan="9">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
+        customerTableBody.innerHTML = `<tr><td colspan="11">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
         console.error("Lỗi fetchCustomers: ", error);
     }
 }
 
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
-    if (!customer) {
-        console.error("Không tìm thấy khách hàng với ID:", customerId);
-        return;
-    }
+    if (!customer) { return; }
+    
     document.getElementById('id').value = customer.id;
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) {
             if (element.hasOwnProperty('_flatpickr')) {
-                element._flatpickr.setDate(customer[fieldId], true); 
+                element._flatpickr.setDate(customer[fieldId], false);
             } else {
                 element.value = customer[fieldId] || '';
             }
         }
     });
+    
     const oldNotesDiv = document.getElementById('oldNotesDisplay');
     oldNotesDiv.style.display = 'block';
     oldNotesDiv.innerHTML = `<strong>Lịch sử Ghi chú & Hoạt động:</strong><br><pre>${customer.ghiChu || 'Chưa có ghi chú.'}</pre>`;
     document.getElementById('ghiChu').value = '';
     document.getElementById('ghiChu').placeholder = "Thêm ghi chú mới tại đây...";
+    
     document.getElementById('formTitle').textContent = `Cập nhật KH: ${customer.tenKhachHang}`;
     document.getElementById('submitBtn').textContent = 'Lưu thay đổi';
     document.getElementById('cancelEditBtn').style.display = 'inline-block';
@@ -279,13 +275,13 @@ async function populateDropdowns() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('addCustomerForm');
-    const loadDataBtn = document.getElementById('loadDataBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const addCustomerBtn = document.getElementById('addCustomerBtn');
     const customerModal = document.getElementById('customerModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const customerTableBody = document.querySelector('#customerTable tbody');
     const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
     const filterByTimestampBtn = document.getElementById('filterByTimestampBtn');
     const filterByContractBtn = document.getElementById('filterByContractBtn');
     const filterByDeliveryBtn = document.getElementById('filterByDeliveryBtn');
@@ -295,13 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if(customerModal) { customerModal.addEventListener('click', (event) => { if (event.target === customerModal) closeModal(); }); }
     if(form) form.addEventListener('submit', handleSubmit);
-    if(resetFilterBtn) {
-        resetFilterBtn.addEventListener('click', () => {
-            setDefaultDates();
-            searchInput.value = '';
-            fetchCustomers();
-        });
-    }
+    if(cancelEditBtn) cancelEditBtn.addEventListener('click', resetFormToAddMode);
     
     if (customerTableBody) {
         customerTableBody.addEventListener('click', (event) => {
@@ -312,18 +302,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if(searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase().trim();
-            const searchResults = allCustomersData.filter(customer => {
-                return (customer.tenKhachHang || '').toLowerCase().includes(searchTerm) ||
-                       (customer.sdt || '').includes(searchTerm);
-            });
-            currentlyDisplayedData = searchResults;
-            renderTable(currentlyDisplayedData);
+    const performSearch = () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const searchResults = allCustomersData.filter(customer => {
+            return (customer.tenKhachHang || '').toLowerCase().includes(searchTerm) ||
+                   (customer.sdt || '').includes(searchTerm);
         });
-    }
-    
+        currentlyDisplayedData = searchResults;
+        renderTable(currentlyDisplayedData);
+    };
+
+    if(searchBtn) searchBtn.addEventListener('click', performSearch);
+    if(searchInput) searchInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            performSearch();
+        } else if (searchInput.value.trim() === '') {
+            currentlyDisplayedData = allCustomersData;
+            renderTable(currentlyDisplayedData);
+        }
+    });
+
     const handleFilterClick = (filterType) => {
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
@@ -337,11 +335,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterByTimestampBtn) filterByTimestampBtn.addEventListener('click', () => handleFilterClick('dauThoiGian'));
     if (filterByContractBtn) filterByContractBtn.addEventListener('click', () => handleFilterClick('ngayKyHD'));
     if (filterByDeliveryBtn) filterByDeliveryBtn.addEventListener('click', () => handleFilterClick('ngayXHD'));
-    
+    if (resetFilterBtn) {
+        resetFilterBtn.addEventListener('click', () => {
+            setDefaultDates();
+            searchInput.value = '';
+            fetchCustomers();
+        });
+    }
+
     setDefaultDates();
     fetchCustomers();
     populateDropdowns();
-    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "d-m-Y", allowInput: true };
+    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", allowInput: true };
     flatpickr("#ngayKyHD", formDateConfig);
     flatpickr("#ngayXHD", formDateConfig);
 });

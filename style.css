@@ -18,6 +18,7 @@ body {
     left: 0;
     padding: 20px 0;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    z-index: 1000;
 }
 
 .sidebar h2 {
@@ -43,7 +44,7 @@ body {
     border-left: 3px solid transparent;
 }
 
-.sidebar nav li a:hover, .sidebar nav li a.active {
+.sidebar nav li a:hover {
     background-color: #34495e;
 }
 
@@ -68,15 +69,18 @@ body {
 }
 
 /* --- CÁC NÚT HÀNH ĐỘNG & BỘ LỌC --- */
-.main-actions, .filter-controls {
+.main-actions, .filter-controls, .search-box {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
+}
+
+.main-actions {
     margin-bottom: 20px;
 }
 
-.main-actions button, .filter-controls button {
+.main-actions button, .filter-controls button, .search-box button {
     padding: 10px 15px;
     border-radius: 4px;
     border: 1px solid #ccc;
@@ -86,7 +90,7 @@ body {
     font-size: 14px;
 }
 
-.main-actions button:hover, .filter-controls button:hover {
+.main-actions button:hover, .filter-controls button:hover, .search-box button:hover {
     background-color: #bdc3c7;
 }
 
@@ -122,7 +126,6 @@ body {
     font-size: 14px;
 }
 
-
 /* --- BẢNG DỮ LIỆU --- */
 .table-section {
     background-color: #fff;
@@ -145,7 +148,7 @@ th, td {
     border: 1px solid #ddd;
     padding: 12px;
     text-align: left;
-    white-space: nowrap; /* Giữ cho nội dung không bị xuống dòng đột ngột */
+    white-space: nowrap;
 }
 
 thead {
@@ -157,14 +160,12 @@ tbody tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-/* Rút gọn cột ghi chú */
 .notes-preview {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 250px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 300px;
     display: block;
-    margin: 0; /* Xóa margin mặc định của <pre> */
+    margin: 0;
 }
 
 /* --- POPUP (MODAL) VÀ FORM --- */
@@ -222,8 +223,7 @@ tbody tr:nth-child(even) {
 }
 #oldNotesDisplay {
     margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;
-    max-height: 200px; overflow-y: auto; background-color: #f9f9f9;
-    border-radius: 4px; padding: 10px;
+    background-color: #f9f9f9; border-radius: 4px; padding: 10px;
     white-space: pre-wrap;
     font-size: 13px; color: #333;
     line-height: 1.6;
