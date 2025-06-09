@@ -3,36 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM Ô Tô - Quản lý Khách hàng</title>
+    <title>CRM Ô Tô</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
-    <header class="main-header">
-        <h1>Khách hàng</h1>
-        <div id="userInfo"></div>
-    </header>
-    
-    <main>
-        <div class="main-actions">
-            <button id="addCustomerBtn">Thêm Khách Hàng Mới</button>
-            <button id="loadDataBtn">Tải lại Dữ liệu</button>
-        </div>
 
-        <section class="table-section">
-            <div class="table-wrapper">
-                <table id="customerTable">
-                    <thead>
-                        <tr>
-                            <th>Tên KH</th><th>SDT</th><th>Trạng Thái</th><th>Nhân Viên</th><th>Ngày Tạo</th><th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+    <nav class="sidebar">
+        <h2>CRM Ô Tô</h2>
+        <ul>
+            <li><a href="index.html" class="active">Khách hàng</a></li>
+            <li><a href="#">Báo cáo</a></li>
+            <li><a href="#">Tin tức</a></li>
+            <li><a href="#">Tài liệu</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-content">
+        <header class="main-header">
+            <h1>Danh sách Khách hàng</h1>
+            <div id="userInfo"></div>
+        </header>
+        
+        <main>
+            <div class="main-actions">
+                <button id="addCustomerBtn">Thêm Khách Hàng Mới</button>
+                <button id="loadDataBtn">Tải lại Dữ liệu</button>
             </div>
-        </section>
-    </main>
+
+            <section class="table-section">
+                <div class="table-wrapper">
+                    <table id="customerTable">
+                        <thead>
+                            <tr>
+                                <th>Tên KH</th><th>SDT</th><th>Trạng Thái</th><th>Nhân Viên</th><th>Ngày Tạo</th><th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <div id="customerModal" class="modal-overlay">
         <div class="modal-content">

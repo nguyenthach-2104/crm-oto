@@ -1,16 +1,38 @@
 // ===============================================================
-// FILE: script.js (Sắp xếp dữ liệu ở Front-end)
+// FILE: script.js (Phiên bản cuối cùng, sửa lỗi Sắp xếp)
 // ===============================================================
-
-// ... (Các hằng số và các hàm khác giữ nguyên như phiên bản đầy đủ trước đó) ...
-// Để đảm bảo, tôi sẽ dán lại toàn bộ các hàm ở dưới
 
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzeBEriyabZ1C7bHAHbkuZNlHek8Xkk5pATqUCBI8MdW8RUxq4vwf9J-LJP7yS_v7wx/exec'; 
 
 let allCustomersData = [];
 
 /**
- * HÀM DUY NHẤT ĐƯỢC CẬP NHẬT: Thêm logic sort ở front-end
+ * HÀM TRỢ GIÚP MỚI: Chuyển đổi chuỗi ngày tháng (cả dd/mm/yyyy và yyyy-mm-dd) thành đối tượng Date
+ */
+function parseDate(dateString) {
+    if (!dateString || typeof dateString !== 'string') return null;
+    
+    // Thử định dạng yyyy-mm-dd hh:mm:ss (chuẩn)
+    let date = new Date(dateString);
+    if (!isNaN(date.getTime())) {
+        return date;
+    }
+
+    // Thử định dạng dd/mm/yyyy...
+    const parts = dateString.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+    if (parts) {
+        // parts[1]=dd, parts[2]=mm, parts[3]=yyyy
+        date = new Date(parts[3], parts[2] - 1, parts[1]);
+        if (!isNaN(date.getTime())) {
+            return date;
+        }
+    }
+    
+    return null; // Trả về null nếu không thể chuyển đổi
+}
+
+/**
+ * HÀM ĐƯỢC CẬP NHẬT: Thêm logic sort ở front-end
  */
 async function fetchCustomers() {
     const customerTableBody = document.querySelector('#customerTable tbody');
@@ -39,13 +61,14 @@ async function fetchCustomers() {
     
     try {
         const response = await fetch(url);
-        let data = await response.json(); // dùng let thay vì const
+        let data = await response.json();
         
-        // *** THÊM MỚI: SẮP XẾP DỮ LIỆU Ở ĐÂY ***
         if (Array.isArray(data)) {
+            // SẮP XẾP DỮ LIỆU Ở ĐÂY, DÙNG HÀM PARSEDATE MỚI
             data.sort((a, b) => {
-                // Sắp xếp giảm dần (từ mới đến cũ)
-                return new Date(b.dauThoiGian) - new Date(a.dauThoiGian);
+                const dateA = parseDate(a.dauThoiGian);
+                const dateB = parseDate(b.dauThoiGian);
+                return (dateB || 0) - (dateA || 0);
             });
         }
         
@@ -65,7 +88,7 @@ async function fetchCustomers() {
                 <td>${customer.sdt || ''}</td>
                 <td>${customer.trangThai || ''}</td>
                 <td>${customer.tenNhanVien || ''}</td>
-                <td>${customer.dauThoiGian ? new Date(customer.dauThoiGian).toLocaleString('vi-VN') : ''}</td>
+                <td>${customer.dauThoiGian ? new Date(parseDate(customer.dauThoiGian)).toLocaleString('vi-VN') : ''}</td>
                 <td><button class="edit-btn" data-id="${customer.id}">Sửa</button></td>
             `;
             customerTableBody.appendChild(row);
@@ -77,18 +100,8 @@ async function fetchCustomers() {
 }
 
 
-// --- CÁC HÀM CÒN LẠI (GIỮ NGUYÊN) ---
-function populateFormForEdit(customerId) { /* ... */ }
-function resetFormToAddMode() { /* ... */ }
-async function handleSubmit(event) { /* ... */ }
-async function handleAddNewCustomer() { /* ... */ }
-async function handleUpdateCustomer(customerId) { /* ... */ }
-async function populateDropdowns() { /* ... */ }
-function showMessage(msg, type) { /* ... */ }
-// Khối DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => { /* ... */ });
-
-// (Tôi sẽ dán lại các hàm đầy đủ ở dưới để bạn không bị nhầm lẫn)
+// ... (Tất cả các hàm khác từ populateFormForEdit đến hết file giữ nguyên như phiên bản đầy đủ trước đó) ...
+// Để đảm bảo, tôi sẽ dán lại toàn bộ các hàm còn lại.
 
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
@@ -99,14 +112,14 @@ function populateFormForEdit(customerId) {
         const element = document.getElementById(fieldId);
         if (element) { element.value = customer[fieldId] || ''; }
     });
-    document.getElementById('formTitle').textContent = `Cập nhật KH: ${customer.tenKhachHang}`;
-    document.getElementById('submitBtn').textContent = 'Lưu thay đổi';
-    document.getElementById('cancelEditBtn').style.display = 'inline-block';
     const oldNotesDiv = document.getElementById('oldNotesDisplay');
     oldNotesDiv.style.display = 'block';
     oldNotesDiv.innerHTML = `<strong>Lịch sử Ghi chú & Hoạt động:</strong><br><pre>${customer.ghiChu || 'Chưa có ghi chú.'}</pre>`;
     document.getElementById('ghiChu').value = '';
     document.getElementById('ghiChu').placeholder = "Thêm ghi chú mới tại đây...";
+    document.getElementById('formTitle').textContent = `Cập nhật KH: ${customer.tenKhachHang}`;
+    document.getElementById('submitBtn').textContent = 'Lưu thay đổi';
+    document.getElementById('cancelEditBtn').style.display = 'inline-block';
     openModal();
 }
 
@@ -126,6 +139,17 @@ async function handleSubmit(event) {
     if (editId) { handleUpdateCustomer(editId); } 
     else { handleAddNewCustomer(); }
 }
+
+async function handleAddNewCustomer() { /* Giữ nguyên như cũ */ }
+async function handleUpdateCustomer(customerId) { /* Giữ nguyên như cũ */ }
+async function populateDropdowns() { /* Giữ nguyên như cũ */ }
+function showMessage(msg, type) { /* Giữ nguyên như cũ */ }
+function openModal() { document.getElementById('customerModal').style.display = 'flex'; }
+function closeModal() { document.getElementById('customerModal').style.display = 'none'; }
+
+document.addEventListener('DOMContentLoaded', () => { /* Giữ nguyên như cũ */ });
+
+// Dán lại các hàm còn thiếu để bạn có file đầy đủ nhất
 
 async function handleAddNewCustomer() {
     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
@@ -201,9 +225,6 @@ function showMessage(msg, type) {
     if (messageDiv) { messageDiv.textContent = msg; messageDiv.className = type; }
 }
 
-function openModal() { document.getElementById('customerModal').style.display = 'flex'; }
-function closeModal() { document.getElementById('customerModal').style.display = 'none'; }
-
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('addCustomerForm');
     const loadDataBtn = document.getElementById('loadDataBtn');
@@ -212,7 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const customerModal = document.getElementById('customerModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const customerTableBody = document.querySelector('#customerTable tbody');
-
     if(addCustomerBtn) { addCustomerBtn.addEventListener('click', () => { resetFormToAddMode(); openModal(); }); }
     if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if(customerModal) { customerModal.addEventListener('click', (event) => { if (event.target === customerModal) closeModal(); }); }
@@ -227,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
     fetchCustomers();
     populateDropdowns();
     flatpickr("#ngayKyHD", { dateFormat: "d/m/Y" });
