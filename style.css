@@ -4,16 +4,16 @@ body {
     margin: 0;
     background-color: #f4f6f9;
     color: #333;
-    display: flex; /* Bật Flexbox để chia layout */
+    display: flex;
 }
 
 /* --- LAYOUT CHÍNH VỚI SIDEBAR MENU --- */
 .sidebar {
     width: 220px;
-    background-color: #2c3e50; /* Màu nền tối cho menu */
+    background-color: #2c3e50;
     color: white;
-    height: 100vh; /* Cao bằng màn hình */
-    position: fixed; /* Cố định menu khi cuộn trang */
+    height: 100vh;
+    position: fixed;
     top: 0;
     left: 0;
     padding: 20px 0;
@@ -43,7 +43,7 @@ body {
     border-left: 3px solid transparent;
 }
 
-.sidebar nav li a:hover {
+.sidebar nav li a:hover, .sidebar nav li a.active {
     background-color: #34495e;
 }
 
@@ -54,9 +54,9 @@ body {
 }
 
 .main-content {
-    margin-left: 220px; /* Tạo khoảng trống bằng độ rộng của menu */
+    margin-left: 220px;
     padding: 25px;
-    width: calc(100% - 220px); /* Chiếm phần còn lại của màn hình */
+    width: calc(100% - 220px);
     box-sizing: border-box;
 }
 
@@ -67,98 +67,72 @@ body {
     margin-bottom: 20px;
 }
 
-/* --- FORM NHẬP LIỆU --- */
-.form-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.grid-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px; 
-}
-
-.full-width {
-    grid-column: 1 / -1;
-}
-
-.grid-form input,
-.grid-form textarea,
-.grid-form select,
-.grid-form button {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-family: inherit;
-    font-size: 14px;
-}
-
-.grid-form textarea {
-    min-height: 80px;
-    resize: vertical;
-}
-
-.grid-form button[type="submit"] {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
-.grid-form button[type="submit"]:hover {
-    background-color: #2980b9;
-}
-.grid-form button[type="button"]#cancelEditBtn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-
-/* --- BỘ LỌC VÀ BẢNG DỮ LIỆU --- */
-.filter-section, .table-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.filter-controls {
+/* --- CÁC NÚT HÀNH ĐỘNG & BỘ LỌC --- */
+.main-actions, .filter-controls {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
+    margin-bottom: 20px;
 }
 
-.filter-controls input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.main-actions, .filter-controls button {
+.main-actions button, .filter-controls button {
     padding: 10px 15px;
     border-radius: 4px;
     border: 1px solid #ccc;
     background-color: #ecf0f1;
     cursor: pointer;
     font-weight: bold;
+    font-size: 14px;
 }
+
 .main-actions button:hover, .filter-controls button:hover {
     background-color: #bdc3c7;
 }
 
+.filter-controls input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* --- KHU VỰC TÌM KIẾM & TÓM TẮT --- */
+.summary-search-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #e9ecef;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    padding: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    width: 300px;
+    font-size: 14px;
+}
+
+#summaryInfo {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+
+/* --- BẢNG DỮ LIỆU --- */
+.table-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 .table-wrapper {
-    overflow-x: auto; /* Thêm thanh cuộn ngang nếu bảng quá rộng */
+    overflow-x: auto;
 }
 
 table {
@@ -171,6 +145,7 @@ th, td {
     border: 1px solid #ddd;
     padding: 12px;
     text-align: left;
+    white-space: nowrap; /* Giữ cho nội dung không bị xuống dòng đột ngột */
 }
 
 thead {
@@ -182,7 +157,17 @@ tbody tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-/* --- POPUP (MODAL) --- */
+/* Rút gọn cột ghi chú */
+.notes-preview {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+    display: block;
+    margin: 0; /* Xóa margin mặc định của <pre> */
+}
+
+/* --- POPUP (MODAL) VÀ FORM --- */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.6); z-index: 999;
@@ -201,11 +186,45 @@ tbody tr:nth-child(even) {
 }
 .close-btn:hover { color: #000; }
 
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px; 
+}
+.full-width {
+    grid-column: 1 / -1;
+}
+.grid-form input,
+.grid-form textarea,
+.grid-form select,
+.grid-form button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+}
+.grid-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+.grid-form button[type="submit"] {
+    background-color: #3498db; color: white; border: none;
+    cursor: pointer; font-weight: bold; transition: background-color 0.3s;
+}
+.grid-form button[type="submit"]:hover {
+    background-color: #2980b9;
+}
+.grid-form button[type="button"]#cancelEditBtn {
+    background-color: #95a5a6; color: white; border: none; cursor: pointer;
+}
 #oldNotesDisplay {
     margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;
     max-height: 200px; overflow-y: auto; background-color: #f9f9f9;
     border-radius: 4px; padding: 10px;
-    white-space: pre-wrap; /* Hiển thị các dấu xuống dòng */
+    white-space: pre-wrap;
     font-size: 13px; color: #333;
     line-height: 1.6;
 }
