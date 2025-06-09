@@ -59,7 +59,6 @@ function setDefaultDates() {
     flatpickr(endDateInput, { ...flatpickrConfig, defaultDate: lastDay });
 }
 
-
 // ===============================================================
 // CÁC HÀM XỬ LÝ DỮ LIỆU CHÍNH
 // ===============================================================
@@ -86,9 +85,7 @@ function renderTable(customerData) {
         customerData.forEach((customer, index) => {
             const row = document.createElement('tr');
             row.id = `row-${customer.id}`;
-            // Sửa lỗi hiển thị ghi chú
-            const noteAsString = String(customer.ghiChu || '');
-            const firstLineOfNote = noteAsString.split('\n')[0];
+            const firstLineOfNote = String(customer.ghiChu || '').split('\n')[0];
 
             row.innerHTML = `
                 <td>${index + 1}</td>
@@ -100,7 +97,7 @@ function renderTable(customerData) {
                 <td>${customer.trangThai || ''}</td>
                 <td>${formatDate(customer.ngayKyHD, false)}</td>
                 <td>${formatDate(customer.ngayXHD, false)}</td>
-                <td><pre class="notes-preview" title="${noteAsString}">${firstLineOfNote}</pre></td>
+                <td><pre class="notes-preview" title="${customer.ghiChu || ''}">${firstLineOfNote}</pre></td>
                 <td><button class="edit-btn" data-id="${customer.id}">Sửa</button></td>
             `;
             customerTableBody.appendChild(row);
@@ -161,13 +158,17 @@ async function fetchCustomers(filter = {}) {
 
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
-    if (!customer) { return; }
+    if (!customer) {
+        console.error("Không tìm thấy khách hàng với ID:", customerId);
+        return;
+    }
     
     document.getElementById('id').value = customer.id;
     const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) {
+            // Với các ô flatpickr, cần dùng API của nó để đặt ngày
             if (element.hasOwnProperty('_flatpickr')) {
                 element._flatpickr.setDate(customer[fieldId], false);
             } else {
@@ -176,11 +177,15 @@ function populateFormForEdit(customerId) {
         }
     });
     
+    // Xóa bỏ khu vực hiển thị log cũ, không cần nữa
     const oldNotesDiv = document.getElementById('oldNotesDisplay');
-    oldNotesDiv.style.display = 'block';
-    oldNotesDiv.innerHTML = `<strong>Lịch sử Ghi chú & Hoạt động:</strong><br><pre>${customer.ghiChu || 'Chưa có ghi chú.'}</pre>`;
+    if (oldNotesDiv) oldNotesDiv.style.display = 'none';
+    
+    // Thay đổi placeholder của ô ghi chú khi sửa
+    document.getElementById('ghiChu').placeholder = "Thêm ghi chú mới vào lịch sử hoạt động...";
+    // Xóa nội dung trong ô ghi chú để người dùng nhập ghi chú mới
     document.getElementById('ghiChu').value = '';
-    document.getElementById('ghiChu').placeholder = "Thêm ghi chú mới tại đây...";
+
     
     document.getElementById('formTitle').textContent = `Cập nhật KH: ${customer.tenKhachHang}`;
     document.getElementById('submitBtn').textContent = 'Lưu thay đổi';
@@ -194,8 +199,6 @@ function resetFormToAddMode() {
     document.getElementById('formTitle').textContent = 'Thêm khách hàng mới';
     document.getElementById('submitBtn').textContent = 'Thêm mới';
     document.getElementById('cancelEditBtn').style.display = 'none';
-    const oldNotesDiv = document.getElementById('oldNotesDisplay');
-    if(oldNotesDiv) oldNotesDiv.style.display = 'none';
     document.getElementById('ghiChu').placeholder = "Ghi chú";
 }
 
@@ -277,6 +280,7 @@ async function populateDropdowns() {
     } catch (error) { console.error("Lỗi khi tải dữ liệu cho dropdown:", error); }
 }
 
+
 // ===============================================================
 // KHỐI LỆNH CHẠY KHI TẢI TRANG
 // ===============================================================
@@ -313,14 +317,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const performSearch = () => {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        // Lọc từ bộ dữ liệu gốc (allCustomersData) đã được tải về và lọc theo ngày
-        const dataToSearch = currentlyDisplayedData;
+        const searchTerm = searchInput.value.trim();
+        const dataToSearch = currentlyDisplayedData; // Luôn tìm trên dữ liệu đang hiển thị
         const searchResults = dataToSearch.filter(customer => {
-            // SỬA LỖI: Chuyển đổi an toàn sang String trước khi tìm kiếm
-            const name = String(customer.tenKhachHang || '').toLowerCase();
+            // Sửa lại: Chỉ tìm kiếm theo SĐT
             const phone = String(customer.sdt || '');
-            return name.includes(searchTerm) || phone.includes(searchTerm);
+            return phone.includes(searchTerm);
         });
         renderTable(searchResults);
     };
