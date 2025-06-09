@@ -1,5 +1,5 @@
 // ===============================================================
-// FILE: script.js (Hoàn thiện cuối cùng - Giao diện & Chức năng)
+// FILE: script.js (Hoàn thiện cuối cùng)
 // ===============================================================
 
 // !!! QUAN TRỌNG: Dán URL Web App cuối cùng của bạn vào đây !!!
@@ -27,7 +27,7 @@ function showMessage(msg, type) {
 function formatDate(dateString, includeTime = false) {
     if (!dateString) return '';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '';
+    if (isNaN(date.getTime())) return dateString; 
 
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -156,6 +156,9 @@ async function fetchCustomers(filter = {}) {
     }
 }
 
+/**
+ * HÀM ĐƯỢC SỬA LẠI: Hiển thị đúng và đầy đủ ghi chú cũ
+ */
 function populateFormForEdit(customerId) {
     const customer = allCustomersData.find(c => c.id === customerId);
     if (!customer) {
@@ -164,11 +167,10 @@ function populateFormForEdit(customerId) {
     }
     
     document.getElementById('id').value = customer.id;
-    const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
+    const fields = ['tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
         if (element) {
-            // Với các ô flatpickr, cần dùng API của nó để đặt ngày
             if (element.hasOwnProperty('_flatpickr')) {
                 element._flatpickr.setDate(customer[fieldId], false);
             } else {
@@ -177,15 +179,12 @@ function populateFormForEdit(customerId) {
         }
     });
     
-    // Xóa bỏ khu vực hiển thị log cũ, không cần nữa
-    const oldNotesDiv = document.getElementById('oldNotesDisplay');
-    if (oldNotesDiv) oldNotesDiv.style.display = 'none';
-    
-    // Thay đổi placeholder của ô ghi chú khi sửa
-    document.getElementById('ghiChu').placeholder = "Thêm ghi chú mới vào lịch sử hoạt động...";
-    // Xóa nội dung trong ô ghi chú để người dùng nhập ghi chú mới
-    document.getElementById('ghiChu').value = '';
-
+    // Sửa logic hiển thị ghi chú: điền toàn bộ ghi chú cũ vào textarea
+    const ghiChuTextarea = document.getElementById('ghiChu');
+    ghiChuTextarea.value = customer.ghiChu || ''; // Hiển thị toàn bộ lịch sử
+    ghiChuTextarea.placeholder = "Viết tiếp ghi chú mới vào đây...";
+    // Tự động cuộn xuống cuối ô ghi chú để dễ dàng viết tiếp
+    ghiChuTextarea.scrollTop = ghiChuTextarea.scrollHeight;
     
     document.getElementById('formTitle').textContent = `Cập nhật KH: ${customer.tenKhachHang}`;
     document.getElementById('submitBtn').textContent = 'Lưu thay đổi';
@@ -193,6 +192,9 @@ function populateFormForEdit(customerId) {
     openModal();
 }
 
+/**
+ * HÀM ĐƯỢC SỬA LẠI: Reset ô ghi chú về trạng thái ban đầu
+ */
 function resetFormToAddMode() {
     document.getElementById('id').value = ''; 
     document.getElementById('addCustomerForm').reset();
@@ -241,10 +243,11 @@ async function handleUpdateCustomer(customerId) {
     url.searchParams.append('updaterName', loggedInUser.HoTen);
     url.searchParams.append('updaterRole', loggedInUser.VaiTro);
     url.searchParams.append('updaterTeam', loggedInUser.Nhom);
+    // Khi cập nhật, gửi đi toàn bộ nội dung của ô Ghi chú
     const fields = ['id', 'tenKhachHang', 'sdt', 'tinhThanh', 'huyenTp', 'loaiXe', 'phienBan', 'mau', 'kenh', 'nguon', 'trangThai', 'phanLoaiKH', 'laiThu', 'ngayKyHD', 'ngayXHD', 'ghiChu'];
     fields.forEach(fieldId => {
         const element = document.getElementById(fieldId);
-        if (element) url.searchParams.append(fieldId, element._flatpickr ? element.value : element.value);
+        if (element) url.searchParams.append(fieldId, element.value);
     });
     try {
         const response = await fetch(url);
@@ -318,9 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const performSearch = () => {
         const searchTerm = searchInput.value.trim();
-        const dataToSearch = currentlyDisplayedData; // Luôn tìm trên dữ liệu đang hiển thị
+        const dataToSearch = currentlyDisplayedData;
         const searchResults = dataToSearch.filter(customer => {
-            // Sửa lại: Chỉ tìm kiếm theo SĐT
             const phone = String(customer.sdt || '');
             return phone.includes(searchTerm);
         });
@@ -352,14 +354,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setDefaultDates();
             searchInput.value = '';
             fetchCustomers();
-        });
+});
     }
 
     // Khởi tạo các chức năng chính
     setDefaultDates();
     fetchCustomers();
     populateDropdowns();
-    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "d/m/Y", allowInput: true };
+    const formDateConfig = { altInput: true, altFormat: "d/m/Y", dateFormat: "Y-m-d", allowInput: true };
     flatpickr("#ngayKyHD", formDateConfig);
     flatpickr("#ngayXHD", formDateConfig);
 });
